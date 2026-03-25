@@ -1,1281 +1,1110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drexel Melendez — Live Command Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-/* ══ TOKENS ══════════════════════════════════════════════════════ */
-:root{
-  --bg:#09090f; --bg2:#0f1118; --bg3:#151822; --bg4:#1c2030; --bg5:#232840;
-  --border:rgba(255,255,255,.05); --border2:rgba(255,255,255,.10); --border3:rgba(255,255,255,.18);
-  --text:#dde2f0; --text2:#7a86a0; --text3:#3a4258;
-  --gold:#f0b429; --gold2:#ffd166; --goldbg:rgba(240,180,41,.08);
-  --blue:#4a8cf5; --blue2:#7fb4ff; --bluebg:rgba(74,140,245,.08);
-  --green:#2ecc8a; --green2:#5ee8ae; --greenbg:rgba(46,204,138,.08);
-  --red:#f04a5a; --red2:#f88794; --redbg:rgba(240,74,90,.08);
-  --amber:#e8930a; --amber2:#f9b830; --amberbg:rgba(232,147,10,.08);
-  --purple:#8b6cf7; --purple2:#b09dfc; --purplebg:rgba(139,108,247,.08);
-  --teal:#0ab8d4; --teal2:#4dd8ef; --tealbg:rgba(10,184,212,.08);
-  --pink:#e040a8; --pink2:#f07ed0;
-  /* mastery */
-  --prof:#2ecc8a; --appr:#e8930a; --emer:#f04a5a;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden;}
-
-/* ══ NAV ══════════════════════════════════════════════════════════ */
-.nav{
-  background:var(--bg2); border-bottom:1px solid var(--border);
-  height:50px; padding:0 16px;
-  display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:200;
-}
-.nav-logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:.05em;display:flex;align-items:center;gap:8px;}
-.gem{width:8px;height:8px;border-radius:50%;background:var(--gold2);box-shadow:0 0 10px rgba(255,209,102,.6);}
-.nav-tabs{display:flex;align-items:stretch;height:100%;gap:0;}
-.ntab{
-  font-size:11px;font-weight:600;padding:0 14px;
-  border:none;background:transparent;color:var(--text2);
-  cursor:pointer;border-bottom:2px solid transparent;
-  display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;
-}
-.ntab:hover{color:var(--text);background:var(--bg3);}
-.ntab.active{color:var(--text);border-bottom-color:var(--gold2);background:var(--bg3);}
-.ntab.disc-tab.active{color:var(--teal2);border-bottom-color:var(--teal);}
-.nav-right{display:flex;align-items:center;gap:8px;}
-.sync-pill{
-  font-size:10px;font-weight:600;font-family:'DM Mono',monospace;
-  padding:3px 9px;border-radius:20px;
-  background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
-  display:flex;align-items:center;gap:5px;cursor:pointer;transition:all .15s;
-}
-.sync-pill:hover{border-color:var(--border3);}
-.sync-pill.ok{color:var(--green2);border-color:rgba(46,204,138,.3);}
-.sync-pill.err{color:var(--red2);border-color:rgba(240,74,90,.3);}
-.sync-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
-.sync-dot.pulse{animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* ══ BUTTONS ═════════════════════════════════════════════════════ */
-.btn{
-  font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
-  padding:4px 11px;border-radius:5px;border:1px solid var(--border2);
-  background:var(--bg3);color:var(--text);cursor:pointer;transition:all .12s;
-}
-.btn:hover{background:var(--bg4);border-color:var(--border3);}
-.btn:active{transform:scale(.97);}
-.btn-gold{background:var(--goldbg);border-color:rgba(240,180,41,.3);color:var(--gold2);}
-.btn-gold:hover{background:rgba(240,180,41,.16);}
-.btn-g{background:var(--greenbg);border-color:rgba(46,204,138,.3);color:var(--green2);}
-.btn-g:hover{background:rgba(46,204,138,.16);}
-.btn-b{background:var(--bluebg);border-color:rgba(74,140,245,.3);color:var(--blue2);}
-.btn-b:hover{background:rgba(74,140,245,.16);}
-.btn-r{background:var(--redbg);border-color:rgba(240,74,90,.3);color:var(--red2);}
-.btn-r:hover{background:rgba(240,74,90,.18);}
-.btn-teal{background:var(--tealbg);border-color:rgba(10,184,212,.3);color:var(--teal2);}
-.btn-teal:hover{background:rgba(10,184,212,.16);}
-
-/* ══ PAGE CONTAINERS ══════════════════════════════════════════════ */
-.page{display:none;animation:fadein .2s ease;}
-.page.active{display:block;}
-@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-
-/* ══ STATS BAR ════════════════════════════════════════════════════ */
-.stats-bar{
-  display:flex;flex-wrap:wrap;gap:6px;
-  padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);
-}
-.sc{
-  display:flex;align-items:center;gap:7px;
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:6px;padding:5px 12px;
-}
-.sc-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
-.sc-val{font-size:16px;font-weight:700;font-family:'Syne',sans-serif;}
-
-/* ══ SEATING LAYOUT ═══════════════════════════════════════════════ */
-.room-wrap{padding:16px;}
-.front-banner{
-  background:var(--goldbg);border:1px solid rgba(240,180,41,.25);
-  border-radius:8px;padding:9px 16px;text-align:center;
-  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
-  color:var(--gold2);margin-bottom:16px;letter-spacing:.04em;
-}
-.seating-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:18px;align-items:start;
-}
-.cluster{display:flex;flex-direction:column;gap:5px;}
-.cluster-badge{
-  font-family:'DM Mono',monospace;font-size:9px;font-weight:500;
-  color:var(--purple2);background:var(--purplebg);
-  border:1px solid rgba(139,108,247,.2);
-  border-radius:4px;padding:2px 7px;
-  display:inline-flex;align-items:center;width:fit-content;margin-bottom:3px;
-}
-.desk-pair{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-
-/* ══ DESK CARD ════════════════════════════════════════════════════ */
-.desk{
-  border-radius:8px;padding:0;
-  border:1px solid var(--border2);
-  cursor:pointer;transition:all .2s;
-  position:relative;overflow:hidden;
-  background:var(--bg3);
-}
-.desk:hover{border-color:var(--border3);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.5);}
-.desk.empty{background:var(--bg2);border-style:dashed;border-color:var(--border);cursor:default;}
-.desk.empty:hover{transform:none;box-shadow:none;}
-
-/* desk top: name + heatbar */
-.desk-top{
-  padding:7px 9px 5px;
-  display:flex;align-items:center;justify-content:space-between;gap:4px;
-}
-.desk-name{font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
-.desk-heat{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .4s;}
-
-/* metric micro-bar row */
-.desk-metrics{
-  padding:0 9px 7px;
-  display:flex;gap:3px;flex-wrap:wrap;
-}
-.dm{
-  font-size:8px;font-weight:600;font-family:'DM Mono',monospace;
-  padding:1px 5px;border-radius:3px;
-  white-space:nowrap;
-}
-.dm-gold{background:rgba(240,180,41,.15);color:var(--gold2);}
-.dm-part{background:rgba(74,140,245,.15);color:var(--blue2);}
-.dm-effort{background:rgba(46,204,138,.15);color:var(--green2);}
-.dm-prof{background:rgba(46,204,138,.18);color:var(--green2);}
-.dm-appr{background:rgba(232,147,10,.18);color:var(--amber2);}
-.dm-emer{background:rgba(240,74,90,.18);color:var(--red2);}
-.dm-disc{background:rgba(10,184,212,.15);color:var(--teal2);}
-
-/* one-click button strip under desk card */
-.desk-buttons{
-  padding:0 5px 6px;
-  display:flex;gap:3px;flex-wrap:wrap;
-}
-.db{
-  font-size:8px;font-weight:700;font-family:'DM Mono',monospace;
-  padding:2px 6px;border-radius:4px;border:1px solid transparent;
-  cursor:pointer;transition:all .12s;white-space:nowrap;
-  background:var(--bg4);color:var(--text2);border-color:var(--border);
-}
-.db:hover{transform:scale(1.05);}
-.db:active{transform:scale(.95);}
-.db.db-coin{background:rgba(240,180,41,.12);color:var(--gold2);border-color:rgba(240,180,41,.25);}
-.db.db-coin:hover{background:rgba(240,180,41,.22);}
-.db.db-part{background:rgba(74,140,245,.12);color:var(--blue2);border-color:rgba(74,140,245,.25);}
-.db.db-part:hover{background:rgba(74,140,245,.22);}
-.db.db-effort{background:rgba(46,204,138,.10);color:var(--green2);border-color:rgba(46,204,138,.22);}
-.db.db-effort:hover{background:rgba(46,204,138,.2);}
-.db.db-prof{background:rgba(46,204,138,.12);color:var(--green2);border-color:rgba(46,204,138,.3);}
-.db.db-appr{background:rgba(232,147,10,.12);color:var(--amber2);border-color:rgba(232,147,10,.3);}
-.db.db-emer{background:rgba(240,74,90,.12);color:var(--red2);border-color:rgba(240,74,90,.3);}
-.db.db-disc{background:rgba(10,184,212,.10);color:var(--teal2);border-color:rgba(10,184,212,.22);}
-.db.db-disc:hover{background:rgba(10,184,212,.2);}
-.db.active-mastery{box-shadow:0 0 0 2px currentColor;}
-
-/* heatmap bg tints */
-.desk.ht-none{background:var(--bg3);}
-.desk.ht-low{background:#111e28;}
-.desk.ht-mid{background:#1e1a0e;}
-.desk.ht-high{background:#1e1210;}
-.desk.ht-great{background:#0d1e15;}
-
-/* ══ DISCUSSION FLIGHT MAP ════════════════════════════════════════ */
-#disc-page{padding:0;}
-.disc-toolbar{
-  padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-}
-.disc-canvas-wrap{
-  position:relative;width:100%;
-  height:calc(100vh - 160px);min-height:500px;
-  overflow:hidden;background:var(--bg);
-}
-#disc-canvas{position:absolute;inset:0;width:100%;height:100%;}
-.disc-seat{
-  position:absolute;
-  width:72px;
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:7px;padding:5px 7px;
-  display:flex;flex-direction:column;gap:3px;
-  cursor:pointer;transition:all .2s;z-index:10;
-  user-select:none;
-}
-.disc-seat:hover{border-color:var(--teal);transform:scale(1.05);z-index:20;}
-.disc-seat.speaking{border-color:var(--gold2);box-shadow:0 0 12px rgba(255,209,102,.4);background:rgba(240,180,41,.1);z-index:30;}
-.disc-seat.first-speaker{border-color:var(--teal);box-shadow:0 0 12px rgba(10,184,212,.4);}
-.ds-name{font-size:9px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ds-count{font-size:16px;font-weight:800;font-family:'Syne',sans-serif;color:var(--text);line-height:1;}
-.ds-tag{font-size:7px;font-family:'DM Mono';color:var(--text2);}
-.disc-legend{
-  display:flex;gap:16px;align-items:center;
-  padding:8px 16px;background:var(--bg2);border-top:1px solid var(--border);
-  font-size:10px;color:var(--text2);flex-wrap:wrap;
-}
-.dleg{display:flex;align-items:center;gap:5px;}
-.dleg-line{width:28px;height:2px;border-radius:2px;}
-
-/* ══ PANEL (right slide-in) ══════════════════════════════════════ */
-.panel{
-  position:fixed;right:0;top:0;bottom:0;width:300px;
-  background:var(--bg2);border-left:1px solid var(--border2);
-  padding:18px;overflow-y:auto;
-  transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
-  z-index:300;
-}
-.panel.open{transform:translateX(0);}
-.panel-close{
-  position:absolute;top:12px;right:12px;
-  background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text2);border-radius:4px;
-  padding:2px 8px;font-size:11px;cursor:pointer;
-}
-.panel-close:hover{color:var(--text);background:var(--bg4);}
-.p-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-top:4px;padding-right:36px;}
-.p-sec{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin:14px 0 6px;}
-.p-grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.p-card{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:7px;padding:8px 10px;
-}
-.p-card-label{font-size:9px;color:var(--text2);margin-bottom:2px;}
-.p-card-val{font-size:20px;font-weight:700;font-family:'Syne',sans-serif;}
-.p-bar-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
-.p-bar-label{font-size:9px;color:var(--text2);width:75px;flex-shrink:0;}
-.p-bar-track{flex:1;height:4px;background:var(--bg5);border-radius:3px;overflow:hidden;}
-.p-bar-fill{height:100%;border-radius:3px;transition:width .4s;}
-.p-mastery-btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
-.pmb{
-  flex:1;padding:7px 4px;border-radius:6px;
-  font-size:10px;font-weight:700;text-align:center;
-  border:1px solid transparent;cursor:pointer;transition:all .15s;
-  font-family:'DM Mono',monospace;
-}
-.pmb.pmb-prof{background:rgba(46,204,138,.12);border-color:rgba(46,204,138,.3);color:var(--green2);}
-.pmb.pmb-appr{background:rgba(232,147,10,.12);border-color:rgba(232,147,10,.3);color:var(--amber2);}
-.pmb.pmb-emer{background:rgba(240,74,90,.12);border-color:rgba(240,74,90,.3);color:var(--red2);}
-.pmb:hover{filter:brightness(1.2);}
-.pmb.selected{box-shadow:0 0 0 2px currentColor;}
-.p-log{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:5px;padding:6px 8px;
-  font-size:10px;color:var(--text2);line-height:1.6;
-  max-height:120px;overflow-y:auto;
-}
-.p-log-empty{color:var(--text3);font-style:italic;}
-
-/* ══ TOAST ════════════════════════════════════════════════════════ */
-.toast{
-  position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(50px);
-  background:var(--bg4);border:1px solid var(--border3);
-  padding:7px 15px;border-radius:7px;font-size:12px;font-weight:500;
-  transition:transform .25s;z-index:999;pointer-events:none;white-space:nowrap;
-}
-.toast.show{transform:translateX(-50%) translateY(0);}
-
-/* ══ SYNC OVERLAY ════════════════════════════════════════════════ */
-.soverlay{
-  position:fixed;inset:0;background:rgba(9,9,15,.85);
-  display:flex;align-items:center;justify-content:center;
-  z-index:500;opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.soverlay.active{opacity:1;pointer-events:all;}
-.sbox{
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:10px;padding:28px 32px;text-align:center;max-width:320px;width:90%;
-}
-.spin{
-  width:30px;height:30px;border:2.5px solid var(--border2);
-  border-top-color:var(--blue2);border-radius:50%;
-  animation:spin .8s linear infinite;margin:0 auto 14px;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ══ MISC ════════════════════════════════════════════════════════ */
-.door-label{text-align:right;margin-top:12px;font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--text3);}
-select,input[type=date]{
-  background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text);border-radius:5px;padding:4px 8px;font-size:11px;
-  font-family:'DM Sans',sans-serif;cursor:pointer;
-}
-select:focus,input:focus{outline:none;border-color:var(--blue);}
-.divider{width:1px;height:18px;background:var(--border2);}
-
-/* ══ APPS SCRIPT SETUP NOTICE ════════════════════════════════════ */
-.setup-notice{
-  background:rgba(10,184,212,.07);border:1px solid rgba(10,184,212,.2);
-  border-radius:7px;padding:10px 14px;margin:10px 16px;
-  font-size:11px;color:var(--teal2);display:flex;gap:10px;align-items:flex-start;
-}
-.setup-notice b{font-weight:700;}
-.setup-notice input{flex:1;min-width:0;font-size:11px;background:var(--bg4);border:1px solid rgba(10,184,212,.3);color:var(--text);padding:4px 8px;border-radius:5px;}
-</style>
-</head>
-<body>
-
-<!-- ══ NAV ════════════════════════════════════════════════════════ -->
-<nav class="nav">
-  <div style="display:flex;align-items:center;gap:14px;">
-    <div class="nav-logo"><div class="gem"></div>DREXEL MELENDEZ</div>
-    <div class="nav-tabs">
-      <button class="ntab active" onclick="switchPage('heatmap',this)">🗺 Seating + Live</button>
-      <button class="ntab disc-tab" onclick="switchPage('disc',this)">✈ Discussion Map</button>
-    </div>
-  </div>
-  <div class="nav-right">
-    <div class="sync-pill" id="syncPill" onclick="syncFromSheets()">
-      <div class="sync-dot" id="syncDot"></div>
-      <span id="syncLabel">Pull Sheets</span>
-    </div>
-    <button class="btn btn-b" onclick="pushAllToSheets()">↑ Push All</button>
-    <button class="btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1YwaaYZkXZENl-fvrsC57gU10NW_b1O5gu340FJ6pL_I/edit','_blank')">↗ Sheet</button>
-  </div>
-</nav>
-
-<!-- ══ APPS SCRIPT URL SETUP ══════════════════════════════════════ -->
-<div class="setup-notice" id="setupNotice">
-  <div>⚡</div>
-  <div style="flex:1;">
-    <b>One-time setup:</b> Paste your Google Apps Script Web App URL to enable live push to Sheets.
-    <div style="display:flex;gap:6px;margin-top:6px;">
-      <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;">
-      <button class="btn btn-teal" onclick="saveScriptUrl()">Save</button>
-    </div>
-  </div>
-  <button onclick="document.getElementById('setupNotice').style.display='none'" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:0;">✕</button>
-</div>
-
-<!-- ══ STATS BAR ══════════════════════════════════════════════════ -->
-<div class="stats-bar" id="statsBar">
-  <div class="sc"><div class="sc-label">Students</div><div class="sc-val" id="st-count" style="color:var(--text)">27</div></div>
-  <div class="sc"><div class="sc-label">Dragon $</div><div class="sc-val" id="st-coins" style="color:var(--gold2)">—</div></div>
-  <div class="sc"><div class="sc-label">Avg Part.</div><div class="sc-val" id="st-part" style="color:var(--blue2)">—</div></div>
-  <div class="sc"><div class="sc-label">Proficient</div><div class="sc-val" id="st-prof" style="color:var(--green2)">—</div></div>
-  <div class="sc"><div class="sc-label">Approaching</div><div class="sc-val" id="st-appr" style="color:var(--amber2)">—</div></div>
-  <div class="sc"><div class="sc-label">Emerging</div><div class="sc-val" id="st-emer" style="color:var(--red2)">—</div></div>
-  <div class="sc"><div class="sc-label">Disc. Turns</div><div class="sc-val" id="st-disc" style="color:var(--teal2)">—</div></div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-    <span style="font-size:10px;color:var(--text2);">Heat:</span>
-    <select id="heatMetric" onchange="rerenderDesks()" style="font-size:10px;">
-      <option value="coins">Dragon $</option>
-      <option value="participation" selected>Participation</option>
-      <option value="effort">Effort</option>
-      <option value="mastery">Mastery</option>
-      <option value="discussion">Discussion</option>
-    </select>
-    <input type="date" id="datePicker" onchange="rerenderDesks()" style="font-size:10px;">
-  </div>
-</div>
-
-<!-- ══ PAGE: HEATMAP ══════════════════════════════════════════════ -->
-<div class="page active" id="page-heatmap">
-<div class="room-wrap">
-  <div class="front-banner">▲ FRONT OF ROOM — Drexel Melendez</div>
-
-  <div class="seating-grid" id="seatingGrid">
-    <!-- Left column: 6, 7, back-left -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">6</div>
-        <div class="desk-pair">
-          <div id="dk-Andry"></div>
-          <div id="dk-empty-6a" class="desk empty" style="min-height:80px;"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Samuel"></div>
-          <div id="dk-Dashaun"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">7</div>
-        <div class="desk-pair">
-          <div id="dk-Sarah"></div>
-          <div id="dk-Dasha"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Osmari"></div>
-          <div id="dk-Wismarlin"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div style="height:18px;"></div>
-        <div class="desk-pair">
-          <div id="dk-empty-bl" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-John Thomas"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-frank-Isaiah"></div>
-          <div id="dk-Xavier"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Center column: 5, 4 -->
-    <div style="display:flex;flex-direction:column;gap:18px;padding-top:52px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">5</div>
-        <div class="desk-pair">
-          <div id="dk-Ethan"></div>
-          <div id="dk-Derek P"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Hector T"></div>
-          <div id="dk-empty-5b" class="desk empty" style="min-height:80px;"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">4</div>
-        <div class="desk-pair">
-          <div id="dk-Emily"></div>
-          <div id="dk-Zoey"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Eli"></div>
-          <div id="dk-Hector H"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Right column: 1, 2, 3 -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">1</div>
-        <div class="desk-pair">
-          <div id="dk-empty-1a" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-Jazzia"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Saihana"></div>
-          <div id="dk-Raynell L"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">2</div>
-        <div class="desk-pair">
-          <div id="dk-Derek"></div>
-          <div id="dk-Ambar"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Sophia U"></div>
-          <div id="dk-Mike"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">3</div>
-        <div class="desk-pair">
-          <div id="dk-Aris"></div>
-          <div id="dk-Logan"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-empty-3b" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-Joshua"></div>
-        </div>
-      </div>
-
-    </div>
-  </div><!-- /seating-grid -->
-
-  <div class="door-label">DOOR ▶</div>
-</div>
-</div><!-- /page-heatmap -->
-
-<!-- ══ PAGE: DISCUSSION MAP ════════════════════════════════════════ -->
-<div class="page" id="page-disc">
-  <div class="disc-toolbar">
-    <span style="font-size:11px;font-weight:600;color:var(--teal2);">✈ Discussion Flight Map</span>
-    <div class="divider"></div>
-    <button class="btn btn-teal" id="discModeBtn" onclick="toggleDiscMode()">▶ Start Discussion</button>
-    <button class="btn" onclick="clearDiscLines()">✕ Clear Lines</button>
-    <select id="discLineType" style="font-size:10px;">
-      <option value="respond">Responds to</option>
-      <option value="build">Builds on</option>
-      <option value="challenge">Challenges</option>
-      <option value="new">New idea</option>
-    </select>
-    <div class="divider"></div>
-    <span style="font-size:10px;color:var(--text2);" id="discStatusLabel">Click a seat to begin a turn</span>
-    <div style="margin-left:auto;display:flex;gap:6px;">
-      <button class="btn btn-b" onclick="exportDiscJSON()">↓ Export</button>
-    </div>
-  </div>
-
-  <div class="disc-canvas-wrap">
-    <canvas id="disc-canvas"></canvas>
-    <!-- seats positioned by JS -->
-    <div id="disc-seats"></div>
-  </div>
-
-  <div class="disc-legend">
-    <b style="font-size:10px;color:var(--text);">Line types:</b>
-    <div class="dleg"><div class="dleg-line" style="background:var(--teal);opacity:.8;"></div><span>Responds to</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--green);border-top:1px dashed var(--green);"></div><span>Builds on</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--amber);"></div><span>Challenges</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--purple);"></div><span>New idea</span></div>
-    <div class="dleg"><div style="width:10px;height:10px;border-radius:50%;background:var(--gold2);"></div><span>Speaking</span></div>
-    <div class="dleg"><div style="width:10px;height:10px;border-radius:50%;background:var(--teal);"></div><span>First speaker</span></div>
-  </div>
-</div>
-
-<!-- ══ STUDENT PANEL ══════════════════════════════════════════════ -->
-<div class="panel" id="studentPanel">
-  <button class="panel-close" onclick="closePanel()">✕</button>
-  <div class="p-name" id="p-name">—</div>
-  <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="p-meta">Cluster —</div>
-
-  <div class="p-sec">Quick Log</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;" id="p-quick"></div>
-
-  <div class="p-sec">Mastery — LAP</div>
-  <div style="font-size:9px;color:var(--text2);margin-bottom:6px;">Select LAP then click level (auto-syncs)</div>
-  <div style="display:flex;gap:5px;margin-bottom:8px;">
-    <button class="btn" id="lap1btn" onclick="setActiveLAP(1)" style="flex:1;font-size:10px;">LAP 1</button>
-    <button class="btn" id="lap2btn" onclick="setActiveLAP(2)" style="flex:1;font-size:10px;">LAP 2</button>
-    <button class="btn" id="lap3btn" onclick="setActiveLAP(3)" style="flex:1;font-size:10px;">LAP 3</button>
-  </div>
-  <div class="p-mastery-btns">
-    <div class="pmb pmb-prof" onclick="setMastery('proficient')">✓ Proficient</div>
-    <div class="pmb pmb-appr" onclick="setMastery('approaching')">~ Approaching</div>
-    <div class="pmb pmb-emer" onclick="setMastery('emerging')">▲ Emerging</div>
-  </div>
-
-  <div class="p-sec">All Metrics</div>
-  <div class="p-grid2">
-    <div class="p-card"><div class="p-card-label">Dragon $</div><div class="p-card-val" id="p-coins" style="color:var(--gold2)">0</div></div>
-    <div class="p-card"><div class="p-card-label">Participation</div><div class="p-card-val" id="p-part" style="color:var(--blue2)">0</div></div>
-    <div class="p-card"><div class="p-card-label">Effort</div><div class="p-card-val" id="p-effort" style="color:var(--green2)">0</div></div>
-    <div class="p-card"><div class="p-card-label">Discussion</div><div class="p-card-val" id="p-disc" style="color:var(--teal2)">0</div></div>
-  </div>
-
-  <div class="p-sec">Mastery by LAP</div>
-  <div id="p-mastery-display" style="display:flex;flex-direction:column;gap:5px;"></div>
-
-  <div class="p-sec">Today's Log</div>
-  <div class="p-log" id="p-log"><span class="p-log-empty">No actions logged yet.</span></div>
-
-  <div style="margin-top:12px;">
-    <a href="https://docs.google.com/spreadsheets/d/1YwaaYZkXZENl-fvrsC57gU10NW_b1O5gu340FJ6pL_I/edit" target="_blank"
-       style="display:flex;align-items:center;gap:6px;text-decoration:none;background:var(--bluebg);border:1px solid rgba(74,140,245,.3);border-radius:6px;padding:7px 11px;font-size:11px;font-weight:600;color:var(--blue2);">
-      ↗ View in Google Sheets
-    </a>
-  </div>
-</div>
-
-<!-- ══ SYNC OVERLAY ══════════════════════════════════════════════ -->
-<div class="soverlay" id="soverlay">
-  <div class="sbox">
-    <div class="spin"></div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:6px;" id="sovMsg">Syncing…</div>
-    <div style="font-size:11px;color:var(--text2);" id="sovSub">Please wait</div>
-  </div>
-</div>
-
-<!-- ══ TOAST ════════════════════════════════════════════════════ -->
-<div class="toast" id="toast"></div>
-
-<script>
 // ═══════════════════════════════════════════════════════════════════
-// CONSTANTS & ROSTER
+// DREXEL MELENDEZ — LIVE CLASS TRACKER  v3
+// Full setup · Pre-populated roster · Custom menus · Dropdowns
 // ═══════════════════════════════════════════════════════════════════
+// DEPLOY:
+//   1. Extensions → Apps Script → clear editor → paste this file
+//   2. Save (Ctrl+S)
+//   3. Run  fullSetup()  once from the dropdown (▶ Run)
+//   4. Deploy → New Deployment → Web App
+//      Execute as: Me  |  Who has access: Anyone
+//   5. Copy the Web App URL → paste into setup bar in the HTML tracker
+// ═══════════════════════════════════════════════════════════════════
+
 const SHEET_ID = '1YwaaYZkXZENl-fvrsC57gU10NW_b1O5gu340FJ6pL_I';
-const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-const TODAY    = new Date().toISOString().slice(0,10);
 
-const ROSTER = [
-  {name:'Andry',        cluster:6}, {name:'Samuel',       cluster:6}, {name:'Dashaun',      cluster:6},
-  {name:'Sarah',        cluster:7}, {name:'Dasha',        cluster:7}, {name:'Osmari',       cluster:7}, {name:'Wismarlin',    cluster:7},
-  {name:'John Thomas',  cluster:null},{name:'frank-Isaiah', cluster:null},{name:'Xavier',       cluster:null},
-  {name:'Ethan',        cluster:5}, {name:'Derek P',      cluster:5}, {name:'Hector T',     cluster:5},
-  {name:'Emily',        cluster:4}, {name:'Zoey',         cluster:4}, {name:'Eli',          cluster:4}, {name:'Hector H',     cluster:4},
-  {name:'Jazzia',       cluster:1}, {name:'Saihana',      cluster:1}, {name:'Raynell L',    cluster:1},
-  {name:'Derek',        cluster:2}, {name:'Ambar',        cluster:2}, {name:'Sophia U',     cluster:2}, {name:'Mike',         cluster:2},
-  {name:'Aris',         cluster:3}, {name:'Logan',        cluster:3}, {name:'Joshua',       cluster:3},
+// ── Tab names ────────────────────────────────────────────────────
+const T_DASH    = '📊 Dashboard';
+const T_LIVE    = '⚡ Live Tracker';
+const T_ROSTER  = '👥 Roster';
+const T_MASTERY = '🎯 Mastery';
+const T_COINS   = '🐉 Dragon Dollars';
+const T_DISC    = '💬 Discussion Log';
+const T_NOTES   = '📝 Coach Notes';
+
+// ── DREXEL ROSTER (from assessment matrix — last, first + student ID) ──
+const DREXEL_STUDENTS = [
+  { last: 'Aarndell',          first: 'Samuel N.',      id: '241761022', cluster: 6  },
+  { last: 'Alvarado Rijo',     first: 'Osmari',         id: '246072508', cluster: 7  },
+  { last: 'Almonte Flores',    first: 'Wismarlin',      id: '257896811', cluster: 7  },
+  { last: 'Adu-Gyamfi',        first: 'Joshua',         id: '244996187', cluster: 3  },
+  { last: 'Campusano',         first: 'Ambar J.',       id: '244809216', cluster: 2  },
+  { last: 'Coker-Ntaidu',      first: 'Frank-Isaiah',   id: '246054811', cluster: null },
+  { last: 'Doroteo',           first: 'Michael',        id: '253398994', cluster: 2  },
+  { last: 'Fournier Gonzalez', first: 'Andry',          id: '245408059', cluster: 6  },
+  { last: 'Guevara',           first: 'Xavier',         id: '243211430', cluster: null },
+  { last: 'Hernandez',         first: 'Hector J.',      id: '250043434', cluster: 5  },
+  { last: 'Jones',             first: 'Raynell',        id: '245676051', cluster: 1  },
+  { last: 'Lopez Morillo',     first: 'Reynelle A.',    id: '239625676', cluster: 1  },
+  { last: 'Monroe',            first: 'Jaizea Y.',      id: '243412970', cluster: 1  },
+  { last: 'Ortega Espinal',    first: 'Aris J.',        id: '247084882', cluster: 3  },
+  { last: 'Parker',            first: 'Zaiayira N.',    id: '243644846', cluster: 3  },
+  { last: 'Pena',              first: 'Ethan R.',       id: '250277387', cluster: 5  },
+  { last: 'Pierre Sanchez',    first: 'Dasha',          id: '246448211', cluster: 7  },
+  { last: 'Pinate',            first: 'Derek S.',       id: '259007938', cluster: 5  },
+  { last: 'Saba',              first: 'Elykem',         id: '244969929', cluster: null },
+  { last: 'Santos de La Cruz', first: 'Sahiana',        id: '254157951', cluster: 1  },
+  { last: 'Sulley',            first: 'Sarah G.',       id: '245286950', cluster: 7  },
+  { last: 'Taveras Bono',      first: 'Hector Y.',      id: '246063317', cluster: 5  },
+  { last: 'Tuo',               first: 'Lotus',          id: '245019674', cluster: null },
+  { last: 'Urizar',            first: 'Sophia G.',      id: '241410224', cluster: 2  },
+  { last: 'Wallace',           first: "Da'Shaun T.",    id: '246841357', cluster: 6  },
+  { last: 'Wise',              first: 'Nailah M.',      id: '244939500', cluster: null },
+  { last: 'Baez',              first: 'Zoey I.',        id: '244498499', cluster: 4  },
 ];
 
-// Discussion seat positions (fraction of canvas width/height)
-const DISC_POSITIONS = {
-  'Andry':       {fx:.10,fy:.18}, 'Samuel':     {fx:.10,fy:.32}, 'Dashaun':    {fx:.22,fy:.25},
-  'Sarah':       {fx:.10,fy:.50}, 'Dasha':      {fx:.10,fy:.64}, 'Osmari':     {fx:.22,fy:.56}, 'Wismarlin':  {fx:.22,fy:.70},
-  'John Thomas': {fx:.10,fy:.82}, 'frank-Isaiah':{fx:.22,fy:.87},'Xavier':     {fx:.10,fy:.93},
-  'Ethan':       {fx:.38,fy:.22}, 'Derek P':    {fx:.50,fy:.15}, 'Hector T':  {fx:.38,fy:.38},
-  'Emily':       {fx:.44,fy:.55}, 'Zoey':       {fx:.56,fy:.50}, 'Eli':        {fx:.44,fy:.70}, 'Hector H':  {fx:.56,fy:.65},
-  'Jazzia':      {fx:.75,fy:.12}, 'Saihana':    {fx:.87,fy:.18}, 'Raynell L': {fx:.88,fy:.30},
-  'Derek':       {fx:.75,fy:.44}, 'Ambar':      {fx:.88,fy:.42}, 'Sophia U':  {fx:.76,fy:.58}, 'Mike':       {fx:.88,fy:.56},
-  'Aris':        {fx:.76,fy:.73}, 'Logan':      {fx:.88,fy:.72}, 'Joshua':    {fx:.84,fy:.86},
+// Helper: display name
+function fullName(s) { return s.first + ' ' + s.last; }
+function sortedRoster() {
+  return DREXEL_STUDENTS.slice().sort((a, b) => a.last.localeCompare(b.last));
+}
+
+// ── Dropdown option lists ────────────────────────────────────────
+const OPT_MASTERY  = ['Proficient', 'Approaching', 'Emerging'];
+const OPT_EFFORT   = ['5 — Exceptional', '4 — Strong', '3 — Solid', '2 — Developing', '1 — Not Yet'];
+const OPT_DISCTYPE = ['Responds To', 'Builds On', 'Challenges', 'New Idea', 'Question'];
+const OPT_TREND    = ['↑ Improving', '→ Steady', '↓ Declining', '★ Breakthrough'];
+const OPT_COINS_REASON = [
+  'Participation', 'Strong Discussion', 'Helped Peer',
+  'Completed Work', 'Above & Beyond', 'LAP Mastery',
+  'Bonus', 'Deduction'
+];
+
+// ── Colors ───────────────────────────────────────────────────────
+const C = {
+  bgDark:   '#0f1118',
+  bgMid:    '#1c2030',
+  gold:     '#f0b429',
+  goldLight:'#fff8e1',
+  goldDark: '#7a4d00',
+  blue:     '#4a8cf5',
+  blueLight:'#e8f0fe',
+  green:    '#2ecc8a',
+  greenLight:'#d4f4e5',
+  greenDark:'#0a5c34',
+  teal:     '#0ab8d4',
+  tealLight:'#e0f7fa',
+  tealDark: '#006064',
+  amber:    '#e8930a',
+  amberLight:'#fff3e0',
+  amberDark:'#7a4d00',
+  red:      '#f04a5a',
+  redLight: '#fde8ea',
+  redDark:  '#7a1020',
+  purple:   '#8b6cf7',
+  purpleLight:'#ede7f6',
+  purpleDark: '#4527a0',
+  white:    '#ffffff',
+  offWhite: '#f8f9fc',
+  altRow:   '#f1f4f9',
+  text:     '#1a1f2e',
+  textMid:  '#4a5568',
 };
 
-// ── Student data model ──
-let SD = {};
-ROSTER.forEach(r => {
-  SD[r.name] = {
-    name: r.name, cluster: r.cluster,
-    coins: 0, participation: 0, effort: 0, discussion: 0,
-    mastery: {lap1: null, lap2: null, lap3: null},
-    log: [],
-  };
-});
-
-// ── Discussion state ──
-let DISC_LINES   = [];   // [{from, to, type, ts}]
-let DISC_ACTIVE  = false;
-let DISC_PENDING = null; // first seat clicked
-let DISC_TURN    = 0;
-
-// ── Panel state ──
-let PANEL_STUDENT = null;
-let ACTIVE_LAP    = 1;
-
-// ── Script URL for push ──
-let SCRIPT_URL = localStorage.getItem('drexel_script_url') || '';
-
 // ═══════════════════════════════════════════════════════════════════
-// INIT
+// CUSTOM MENU
 // ═══════════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('datePicker').value = TODAY;
-  if(SCRIPT_URL){ document.getElementById('setupNotice').style.display='none'; }
-  loadLocal();
-  buildAllDesks();
-  rerenderDesks();
-  updateStats();
-  buildDiscSeats();
-  const ls = localStorage.getItem('drexel_lastsync');
-  if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets,800); }
-  else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
-});
-
-function loadLocal(){
-  const saved = localStorage.getItem('drexel_sd');
-  if(saved){ try{ const p=JSON.parse(saved); ROSTER.forEach(r=>{ if(p[r.name]) Object.assign(SD[r.name],p[r.name]); }); }catch(e){} }
-  const dl = localStorage.getItem('drexel_disclines');
-  if(dl){ try{ DISC_LINES=JSON.parse(dl); }catch(e){} }
-}
-function saveLocal(){
-  localStorage.setItem('drexel_sd', JSON.stringify(SD));
-  localStorage.setItem('drexel_disclines', JSON.stringify(DISC_LINES));
-}
-
-function saveScriptUrl(){
-  SCRIPT_URL = document.getElementById('scriptUrlInput').value.trim();
-  localStorage.setItem('drexel_script_url', SCRIPT_URL);
-  document.getElementById('setupNotice').style.display='none';
-  toast('✓ Script URL saved — push is live!');
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('🐉 Drexel Tracker')
+    .addItem('▶  Full Setup  (run once)',          'fullSetup')
+    .addItem('↺  Re-populate / reset rosters',     'populateAllRosters')
+    .addSeparator()
+    .addSubMenu(ui.createMenu('📅 Daily Actions')
+      .addItem("Clear today's Live Tracker rows",  'clearTodayUI')
+      .addItem('Copy today → archive row',         'archiveTodayUI')
+      .addItem('Mark all effort blank (new day)',   'resetEffortUI')
+    )
+    .addSubMenu(ui.createMenu('📊 Reports & Snapshots')
+      .addItem('Mastery Snapshot — all students',  'masterySnapshotUI')
+      .addItem('Dragon $ Leaderboard',             'coinLeaderboardUI')
+      .addItem('Discussion Summary',               'discSummaryUI')
+      .addItem('At-Risk Summary (Emerging)',        'atRiskUI')
+    )
+    .addSubMenu(ui.createMenu('🔧 Tools')
+      .addItem('Add a new student',                'addStudentUI')
+      .addItem('Bulk-set mastery (LAP)',           'bulkMasteryUI')
+      .addItem('Award Dragon $ to whole class',    'bulkCoinsUI')
+      .addItem('Export roster to CSV',             'exportRosterCSV')
+    )
+    .addSeparator()
+    .addItem('⚙  Show / copy Web App URL',         'showWebAppUrl')
+    .addItem('ℹ  Help & field guide',              'showHelp')
+    .addToUi();
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// BUILD DESK CARDS
+// FULL SETUP — builds all 7 tabs, populates roster, applies formats
 // ═══════════════════════════════════════════════════════════════════
-function buildAllDesks(){
-  ROSTER.forEach(r => buildDesk(r.name));
-}
+function fullSetup() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
 
-function buildDesk(name){
-  const slot = document.getElementById('dk-'+name);
-  if(!slot) return;
-  slot.className = 'desk ht-none';
-  slot.setAttribute('data-name', name);
-  slot.innerHTML = `
-    <div class="desk-top">
-      <div class="desk-name">${name}</div>
-      <div class="desk-heat" id="dh-${name}"></div>
-    </div>
-    <div class="desk-metrics" id="dm-${name}"></div>
-    <div class="desk-buttons">
-      <button class="db db-coin"  onclick="event.stopPropagation();log1('${name}','coins',1)"     title="Dragon Dollar +1">🐉$</button>
-      <button class="db db-part"  onclick="event.stopPropagation();log1('${name}','participation',1)" title="Participation +1">Part+</button>
-      <button class="db db-effort"onclick="event.stopPropagation();log1('${name}','effort',1)"    title="Effort +1">Eff+</button>
-      <button class="db db-disc"  onclick="event.stopPropagation();log1('${name}','discussion',1)" title="Discussion turn">Disc+</button>
-      <button class="db db-prof"  onclick="event.stopPropagation();quickMastery('${name}','proficient')" title="Proficient">✓P</button>
-      <button class="db db-appr"  onclick="event.stopPropagation();quickMastery('${name}','approaching')" title="Approaching">~A</button>
-      <button class="db db-emer"  onclick="event.stopPropagation();quickMastery('${name}','emerging')"  title="Emerging">▲E</button>
-    </div>
-  `;
-  slot.addEventListener('click', () => openPanel(name));
-}
+  // Build in reverse so Dashboard ends up first
+  buildNotesTab(ss);
+  buildDiscussionTab(ss);
+  buildCoinsTab(ss);
+  buildMasteryTab(ss);
+  buildLiveTrackerTab(ss);
+  buildRosterTab(ss);
+  buildDashboard(ss);
 
-// ═══════════════════════════════════════════════════════════════════
-// ONE-CLICK LOG — auto-pushes to sheet
-// ═══════════════════════════════════════════════════════════════════
-function log1(name, field, delta){
-  const s = SD[name];
-  s[field] = (s[field]||0) + delta;
-  const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  const label = {coins:'🐉$', participation:'Part', effort:'Effort', discussion:'Disc'}[field];
-  s.log.unshift(`${ts} — ${label} +${delta} → ${s[field]}`);
-  if(s.log.length>30) s.log.pop();
-  saveLocal();
-  rerenderDesk(name);
-  updateStats();
-  // Refresh panel if open
-  if(PANEL_STUDENT===name) refreshPanel();
-  toast(`${name} · ${label} → ${s[field]}`);
-  // Push single row to sheet
-  pushToSheet(name);
-}
+  // Move Dashboard to position 0
+  ss.setActiveSheet(ss.getSheetByName(T_DASH));
+  ss.moveActiveSheet(1);
 
-function quickMastery(name, level){
-  SD[name].mastery[`lap${ACTIVE_LAP}`] = level;
-  const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  SD[name].log.unshift(`${ts} — LAP${ACTIVE_LAP} → ${level}`);
-  saveLocal();
-  rerenderDesk(name);
-  updateStats();
-  if(PANEL_STUDENT===name) refreshPanel();
-  toast(`${name} · LAP${ACTIVE_LAP} → ${level}`);
-  pushToSheet(name);
+  SpreadsheetApp.getUi().alert(
+    '✅  Setup complete!\n\n' +
+    '7 tabs created & pre-populated with all ' + DREXEL_STUDENTS.length + ' Drexel students.\n\n' +
+    'Next steps:\n' +
+    '1. Deploy → New Deployment → Web App\n' +
+    '   Execute as: Me  |  Access: Anyone\n' +
+    '2. Copy the Web App URL\n' +
+    '3. Paste it into the setup bar in drexel_live_tracker.html'
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// RERENDER DESKS (heatmap)
+// TAB 1 — 📊 DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
-function rerenderDesks(){
-  ROSTER.forEach(r => rerenderDesk(r.name));
-  updateStats();
-}
+function buildDashboard(ss) {
+  let sh = getOrCreate(ss, T_DASH);
+  sh.clearContents(); sh.clearFormats();
 
-function rerenderDesk(name){
-  const slot = document.getElementById('dk-'+name);
-  const s    = SD[name];
-  if(!slot||!s) return;
+  const liveRef  = "'" + T_LIVE    + "'";
+  const rostRef  = "'" + T_ROSTER  + "'";
+  const mastRef  = "'" + T_MASTERY + "'";
+  const coinRef  = "'" + T_COINS   + "'";
 
-  const metric = document.getElementById('heatMetric').value;
-  let   val    = 0;
-  if     (metric==='coins')         val = s.coins;
-  else if(metric==='participation') val = s.participation;
-  else if(metric==='effort')        val = s.effort;
-  else if(metric==='discussion')    val = s.discussion;
-  else if(metric==='mastery'){
-    // proficient=3,approaching=2,emerging=1
-    const lm = s.mastery;
-    const mv = m => m==='proficient'?3:m==='approaching'?2:m==='emerging'?1:0;
-    const avg = [lm.lap1,lm.lap2,lm.lap3].map(mv);
-    val = avg.reduce((a,b)=>a+b,0) / avg.filter(v=>v>0).length || 0;
-  }
+  // ── Title ──
+  sh.getRange('A1:J1').merge()
+    .setValue('🐉  DREXEL MELENDEZ — CLASS DASHBOARD')
+    .setBackground(C.bgDark).setFontColor(C.gold)
+    .setFontSize(16).setFontWeight('bold').setHorizontalAlignment('center');
+  sh.setRowHeight(1, 44);
 
-  // Heat class
-  slot.className = slot.className.replace(/\bht-\w+/g,'').trim();
-  if     (val===0)      slot.classList.add('ht-none');
-  else if(val<=2)       slot.classList.add('ht-low');
-  else if(val<=5)       slot.classList.add('ht-mid');
-  else if(val<=8)       slot.classList.add('ht-high');
-  else                  slot.classList.add('ht-great');
+  sh.getRange('A2:J2').merge()
+    .setFormula('="Last updated: "&TEXT(NOW(),"mmm d, yyyy h:mm AM/PM")')
+    .setBackground(C.bgMid).setFontColor(C.textMid)
+    .setFontSize(9).setHorizontalAlignment('center');
+  sh.setRowHeight(2, 22);
 
-  // Heat dot color
-  const hDot = document.getElementById('dh-'+name);
-  if(hDot){
-    const colors=['#3a4258','#1f6e46','#7a5308','#a02010','#2ecc8a'];
-    const idx = val===0?0:val<=2?1:val<=5?2:val<=8?3:4;
-    hDot.style.background = colors[idx];
-  }
+  // ── Section: Live Stats (row 4) ──
+  writeSectionTitle(sh, 4, 'A', 'TODAY\'S LIVE STATS', C.blue);
 
-  // Metric badges
-  const dmEl = document.getElementById('dm-'+name);
-  if(!dmEl) return;
-  let badges = '';
-  if(s.coins)         badges+=`<span class="dm dm-gold">🐉${s.coins}</span>`;
-  if(s.participation) badges+=`<span class="dm dm-part">P:${s.participation}</span>`;
-  if(s.effort)        badges+=`<span class="dm dm-effort">E:${s.effort}</span>`;
-  if(s.discussion)    badges+=`<span class="dm dm-disc">D:${s.discussion}</span>`;
-  const m=s.mastery;
-  const lapLabel=(v,n)=>{
-    if(!v) return '';
-    const cls=v==='proficient'?'dm-prof':v==='approaching'?'dm-appr':'dm-emer';
-    const short=v==='proficient'?'P':v==='approaching'?'A':'E';
-    return `<span class="dm ${cls}">L${n}:${short}</span>`;
-  };
-  badges+=lapLabel(m.lap1,1)+lapLabel(m.lap2,2)+lapLabel(m.lap3,3);
-  dmEl.innerHTML = badges;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// STATS BAR
-// ═══════════════════════════════════════════════════════════════════
-function updateStats(){
-  const all = ROSTER.map(r=>SD[r.name]);
-  document.getElementById('st-count').textContent = ROSTER.length;
-  document.getElementById('st-coins').textContent = all.reduce((a,s)=>a+s.coins,0);
-  const parts = all.map(s=>s.participation).filter(v=>v>0);
-  document.getElementById('st-part').textContent  = parts.length ? (parts.reduce((a,b)=>a+b,0)/parts.length).toFixed(1) : '—';
-  const lapAll = all.flatMap(s=>[s.mastery.lap1,s.mastery.lap2,s.mastery.lap3]).filter(Boolean);
-  document.getElementById('st-prof').textContent  = lapAll.filter(v=>v==='proficient').length;
-  document.getElementById('st-appr').textContent  = lapAll.filter(v=>v==='approaching').length;
-  document.getElementById('st-emer').textContent  = lapAll.filter(v=>v==='emerging').length;
-  document.getElementById('st-disc').textContent  = DISC_LINES.length;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// STUDENT PANEL
-// ═══════════════════════════════════════════════════════════════════
-function openPanel(name){
-  PANEL_STUDENT = name;
-  ACTIVE_LAP    = 1;
-  refreshPanel();
-  document.getElementById('studentPanel').classList.add('open');
-}
-function closePanel(){
-  document.getElementById('studentPanel').classList.remove('open');
-  PANEL_STUDENT = null;
-}
-
-function refreshPanel(){
-  const s = SD[PANEL_STUDENT];
-  if(!s) return;
-  document.getElementById('p-name').textContent  = s.name;
-  document.getElementById('p-meta').textContent  = `Cluster ${s.cluster||'—'}`;
-  document.getElementById('p-coins').textContent = s.coins;
-  document.getElementById('p-part').textContent  = s.participation;
-  document.getElementById('p-effort').textContent= s.effort;
-  document.getElementById('p-disc').textContent  = s.discussion;
-
-  // Quick log buttons
-  document.getElementById('p-quick').innerHTML=`
-    <button class="btn btn-gold" onclick="log1('${s.name}','coins',1)">+🐉$1</button>
-    <button class="btn btn-gold" onclick="log1('${s.name}','coins',5)">+🐉$5</button>
-    <button class="btn btn-b" onclick="log1('${s.name}','participation',1)">+Part</button>
-    <button class="btn btn-g" onclick="log1('${s.name}','effort',1)">+Effort</button>
-    <button class="btn btn-teal" onclick="log1('${s.name}','discussion',1)">+Disc</button>
-    <button class="btn btn-r" onclick="log1('${s.name}','coins',-1)">-🐉$1</button>
-  `;
-
-  // LAP buttons highlight
-  [1,2,3].forEach(n=>{
-    const b=document.getElementById(`lap${n}btn`);
-    b.style.borderColor = n===ACTIVE_LAP ? 'var(--gold2)' : '';
-    b.style.color       = n===ACTIVE_LAP ? 'var(--gold2)' : '';
+  const statLabels = [
+    ['Dragon $ Today', `=IFERROR(SUM(${liveRef}!D2:D200),0)`       , C.gold,   C.goldLight],
+    ['Participation',  `=IFERROR(SUM(${liveRef}!E2:E200),0)`        , C.blue,   C.blueLight],
+    ['Avg Effort',     `=IFERROR(AVERAGE(IF(${liveRef}!F2:F200<>"",VALUE(LEFT(${liveRef}!F2:F200,1)),"")),"-")`, C.green, C.greenLight],
+    ['Discussion Turns',`=IFERROR(SUM(${liveRef}!G2:G200),0)`       , C.teal,   C.tealLight],
+  ];
+  statLabels.forEach((s, i) => {
+    const col = String.fromCharCode(65 + i * 2); // A, C, E, G
+    const cell = col + '5';
+    const valCell = col + '6';
+    sh.getRange(cell + ':' + String.fromCharCode(66 + i*2) + '5').merge()
+      .setValue(s[0]).setBackground(s[3]).setFontColor(s[2])
+      .setFontSize(9).setFontWeight('bold').setHorizontalAlignment('center')
+      .setBorder(true,true,false,true,false,false,s[2],'SOLID_MEDIUM');
+    sh.getRange(valCell + ':' + String.fromCharCode(66 + i*2) + '6').merge()
+      .setFormula(s[1]).setBackground(s[3]).setFontColor(s[2])
+      .setFontSize(22).setFontWeight('bold').setHorizontalAlignment('center')
+      .setBorder(false,true,true,true,false,false,s[2],'SOLID_MEDIUM');
+    sh.setRowHeight(6, 44);
   });
 
-  // Mastery display
-  const md = document.getElementById('p-mastery-display');
-  md.innerHTML=[1,2,3].map(n=>{
-    const v=s.mastery[`lap${n}`];
-    const cls=v==='proficient'?'dm-prof':v==='approaching'?'dm-appr':v==='emerging'?'dm-emer':'';
-    const col=v==='proficient'?'var(--green2)':v==='approaching'?'var(--amber2)':v==='emerging'?'var(--red2)':'var(--text3)';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg3);border-radius:5px;border:1px solid var(--border);">
-      <span style="font-size:10px;color:var(--text2);width:40px;">LAP ${n}</span>
-      <span style="font-size:11px;font-weight:700;color:${col};">${v||'Not set'}</span>
-      ${v?`<button onclick="clearMastery('${s.name}',${n})" style="margin-left:auto;background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;">✕</button>`:''}
-    </div>`;
-  }).join('');
+  // ── Section: Mastery summary (row 8) ──
+  writeSectionTitle(sh, 8, 'A', 'MASTERY BREAKDOWN — CURRENT', C.purple);
 
-  // Mastery buttons - show selected
-  document.querySelectorAll('.pmb').forEach(b=>b.classList.remove('selected'));
-  const curM = s.mastery[`lap${ACTIVE_LAP}`];
-  if(curM==='proficient')  document.querySelector('.pmb-prof').classList.add('selected');
-  if(curM==='approaching') document.querySelector('.pmb-appr').classList.add('selected');
-  if(curM==='emerging')    document.querySelector('.pmb-emer').classList.add('selected');
-
-  // Log
-  const logEl = document.getElementById('p-log');
-  logEl.innerHTML = s.log.length
-    ? s.log.map(l=>`<div>${l}</div>`).join('')
-    : '<span class="p-log-empty">No actions yet.</span>';
-}
-
-function setActiveLAP(n){
-  ACTIVE_LAP = n;
-  [1,2,3].forEach(i=>{
-    const b=document.getElementById(`lap${i}btn`);
-    b.style.borderColor = i===n?'var(--gold2)':'';
-    b.style.color       = i===n?'var(--gold2)':'';
-  });
-  refreshPanel();
-}
-
-function setMastery(level){
-  if(!PANEL_STUDENT) return;
-  quickMastery(PANEL_STUDENT, level);
-}
-
-function clearMastery(name, lapNum){
-  SD[name].mastery[`lap${lapNum}`] = null;
-  saveLocal();
-  rerenderDesk(name);
-  if(PANEL_STUDENT===name) refreshPanel();
-  pushToSheet(name);
-  toast(`${name} LAP${lapNum} cleared`);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// DISCUSSION MAP
-// ═══════════════════════════════════════════════════════════════════
-let discCanvasEl, discCtx, discSeatEls={};
-
-function buildDiscSeats(){
-  discCanvasEl = document.getElementById('disc-canvas');
-  discCtx      = discCanvasEl.getContext('2d');
-  const wrap   = document.getElementById('disc-seats');
-  wrap.innerHTML='';
-  discSeatEls  = {};
-  ROSTER.forEach(r=>{
-    const div = document.createElement('div');
-    div.className='disc-seat';
-    div.id = 'ds-'+r.name;
-    div.innerHTML=`<div class="ds-name">${r.name}</div><div class="ds-count" id="dsc-${r.name}">0</div><div class="ds-tag">turns</div>`;
-    div.addEventListener('click',()=>discSeatClick(r.name));
-    wrap.appendChild(div);
-    discSeatEls[r.name]=div;
-  });
-  positionDiscSeats();
-  window.addEventListener('resize',()=>{positionDiscSeats();drawDiscLines();});
-  drawDiscLines();
-}
-
-function positionDiscSeats(){
-  const wrap = document.getElementById('disc-seats');
-  const W=wrap.offsetWidth||800, H=wrap.offsetHeight||500;
-  ROSTER.forEach(r=>{
-    const pos=DISC_POSITIONS[r.name]||{fx:.5,fy:.5};
-    const el=discSeatEls[r.name];
-    if(!el) return;
-    el.style.left=(pos.fx*W-36)+'px';
-    el.style.top =(pos.fy*H-28)+'px';
-  });
-}
-
-function discSeatClick(name){
-  if(!DISC_ACTIVE){ toast('Press ▶ Start Discussion first'); return; }
-
-  if(DISC_PENDING===null){
-    // First click = from
-    DISC_PENDING = name;
-    discSeatEls[name].classList.add('speaking');
-    if(DISC_TURN===0) discSeatEls[name].classList.add('first-speaker');
-    document.getElementById('discStatusLabel').textContent = `"${name}" speaking → click who they respond to (or same name for new idea)`;
-  } else {
-    // Second click = to
-    const from = DISC_PENDING;
-    const to   = name;
-    const type = document.getElementById('discLineType').value;
-
-    DISC_LINES.push({from, to, type, ts: Date.now(), turn: DISC_TURN++});
-    log1(from, 'discussion', 1);
-
-    // Clear speaking class
-    discSeatEls[from].classList.remove('speaking','first-speaker');
-    DISC_PENDING = null;
-    saveLocal();
-    drawDiscLines();
-    updateStats();
-    document.getElementById('discStatusLabel').textContent = `Logged: ${from} → ${to} (${type}). Click next speaker.`;
-    toast(`${from} → ${to}`);
-  }
-}
-
-function toggleDiscMode(){
-  DISC_ACTIVE = !DISC_ACTIVE;
-  const btn = document.getElementById('discModeBtn');
-  btn.textContent = DISC_ACTIVE ? '⏹ Stop Discussion' : '▶ Start Discussion';
-  btn.className   = DISC_ACTIVE ? 'btn btn-r' : 'btn btn-teal';
-  if(!DISC_ACTIVE && DISC_PENDING){
-    discSeatEls[DISC_PENDING].classList.remove('speaking','first-speaker');
-    DISC_PENDING=null;
-  }
-  document.getElementById('discStatusLabel').textContent = DISC_ACTIVE
-    ? 'Click a seat to mark speaker'
-    : 'Click a seat to begin a turn';
-}
-
-function drawDiscLines(){
-  if(!discCanvasEl) return;
-  const wrap = document.getElementById('disc-seats');
-  const W = wrap.offsetWidth||800, H = wrap.offsetHeight||500;
-  discCanvasEl.width  = W;
-  discCanvasEl.height = H;
-  discCtx.clearRect(0,0,W,H);
-
-  const typeColors={
-    respond:  '#0ab8d4',
-    build:    '#2ecc8a',
-    challenge:'#e8930a',
-    new:      '#8b6cf7',
-  };
-
-  DISC_LINES.forEach((line,i)=>{
-    const posF = DISC_POSITIONS[line.from]||{fx:.5,fy:.5};
-    const posT = DISC_POSITIONS[line.to  ]||{fx:.5,fy:.5};
-    const x1 = posF.fx*W, y1=posF.fy*H;
-    const x2 = posT.fx*W, y2=posT.fy*H;
-
-    const color = typeColors[line.type]||'#4a8cf5';
-    const alpha = Math.min(.85, .25 + (i/DISC_LINES.length)*.6);
-
-    discCtx.beginPath();
-    discCtx.strokeStyle = color;
-    discCtx.globalAlpha = alpha;
-    discCtx.lineWidth   = line.type==='new'?1.5:1.2;
-
-    if(line.type==='build'){
-      discCtx.setLineDash([5,4]);
-    } else {
-      discCtx.setLineDash([]);
-    }
-
-    // Curved bezier for flight arc
-    const mx=(x1+x2)/2, my=(y1+y2)/2;
-    const dx=x2-x1, dy=y2-y1;
-    const len=Math.sqrt(dx*dx+dy*dy);
-    const curve = Math.min(len*.35, 80);
-    const cpx=mx - dy/len*curve;
-    const cpy=my + dx/len*curve;
-
-    discCtx.moveTo(x1,y1);
-    discCtx.quadraticCurveTo(cpx,cpy,x2,y2);
-    discCtx.stroke();
-
-    // Arrowhead
-    discCtx.setLineDash([]);
-    const t=.85;
-    const ax=((1-t)*(1-t)*x1+2*(1-t)*t*cpx+t*t*x2);
-    const ay=((1-t)*(1-t)*y1+2*(1-t)*t*cpy+t*t*y2);
-    const angle = Math.atan2(y2-ay, x2-ax);
-    const al=8;
-    discCtx.beginPath();
-    discCtx.moveTo(x2,y2);
-    discCtx.lineTo(x2-al*Math.cos(angle-0.4), y2-al*Math.sin(angle-0.4));
-    discCtx.lineTo(x2-al*Math.cos(angle+0.4), y2-al*Math.sin(angle+0.4));
-    discCtx.closePath();
-    discCtx.fillStyle=color;
-    discCtx.fill();
-    discCtx.globalAlpha=1;
+  [
+    ['Proficient',   `=IFERROR(COUNTIF(${mastRef}!C2:E200,"Proficient"),0)`,  C.green,  C.greenLight],
+    ['Approaching',  `=IFERROR(COUNTIF(${mastRef}!C2:E200,"Approaching"),0)`, C.amber,  C.amberLight],
+    ['Emerging',     `=IFERROR(COUNTIF(${mastRef}!C2:E200,"Emerging"),0)`,    C.red,    C.redLight],
+    ['Not Yet Set',  `=IFERROR(${DREXEL_STUDENTS.length}*3-COUNTA(${mastRef}!C2:E200),0)`, C.textMid, C.altRow],
+  ].forEach((s, i) => {
+    const col = String.fromCharCode(65 + i * 2);
+    sh.getRange(col+'9:'+String.fromCharCode(66+i*2)+'9').merge()
+      .setValue(s[0]).setBackground(s[3]).setFontColor(s[2])
+      .setFontSize(9).setFontWeight('bold').setHorizontalAlignment('center')
+      .setBorder(true,true,false,true,false,false,s[2],'SOLID_MEDIUM');
+    sh.getRange(col+'10:'+String.fromCharCode(66+i*2)+'10').merge()
+      .setFormula(s[1]).setBackground(s[3]).setFontColor(s[2])
+      .setFontSize(22).setFontWeight('bold').setHorizontalAlignment('center')
+      .setBorder(false,true,true,true,false,false,s[2],'SOLID_MEDIUM');
+    sh.setRowHeight(10, 44);
   });
 
-  // Update turn counts on seats
-  ROSTER.forEach(r=>{
-    const cnt = DISC_LINES.filter(l=>l.from===r.name).length;
-    const el  = document.getElementById('dsc-'+r.name);
-    if(el) el.textContent = cnt;
-    if(discSeatEls[r.name]){
-      discSeatEls[r.name].style.borderColor = cnt>4?'var(--gold2)':cnt>1?'var(--teal)':'';
-    }
+  // ── Section: Top Dragon $ earners (row 12) ──
+  writeSectionTitle(sh, 12, 'A', 'TOP DRAGON $ EARNERS', C.gold);
+  sh.getRange('A13:C13').setValues([['Name','Cluster','Total 🐉$']])
+    .setBackground(C.bgDark).setFontColor(C.gold).setFontWeight('bold').setFontSize(9);
+  sh.getRange('A14').setFormula(
+    `=IFERROR(QUERY(${coinRef}!A2:C200,"SELECT A,B,C ORDER BY C DESC LIMIT 10 LABEL A '',B '',C ''",0),"")`
+  ).setFontSize(10);
+
+  // ── Section: Emerging students (at-risk list, row 12 col E) ──
+  writeSectionTitle(sh, 12, 'E', 'EMERGING — NEEDS SUPPORT', C.red);
+  sh.getRange('E13:G13').setValues([['Name','LAP 1','LAP 2']])
+    .setBackground(C.bgDark).setFontColor(C.red).setFontWeight('bold').setFontSize(9);
+  sh.getRange('E14').setFormula(
+    `=IFERROR(QUERY(${mastRef}!A2:E200,"SELECT A,C,D WHERE C='Emerging' OR D='Emerging' LIMIT 10 LABEL A '',C '',D ''",0),"")`
+  ).setFontSize(10);
+
+  // ── Quick nav links ──
+  sh.getRange('I4').setValue('Quick Nav →').setFontColor(C.textMid).setFontSize(9).setFontWeight('bold');
+  const navItems = [
+    ['⚡ Live Tracker', T_LIVE],
+    ['👥 Roster',       T_ROSTER],
+    ['🎯 Mastery',      T_MASTERY],
+    ['🐉 Dragon $',     T_COINS],
+    ['💬 Discussion',   T_DISC],
+    ['📝 Notes',        T_NOTES],
+  ];
+  navItems.forEach((n, i) => {
+    sh.getRange('I' + (5 + i)).setValue(n[0])
+      .setFontColor(C.blue).setFontSize(10)
+      .setFontWeight('bold');
   });
-}
 
-function clearDiscLines(){
-  if(!confirm('Clear all discussion lines?')) return;
-  DISC_LINES=[];
-  DISC_PENDING=null;
-  DISC_TURN=0;
-  ROSTER.forEach(r=>{ discSeatEls[r.name].classList.remove('speaking','first-speaker'); });
-  saveLocal();
-  drawDiscLines();
-  updateStats();
-  toast('Discussion cleared');
-}
-
-function exportDiscJSON(){
-  const blob=new Blob([JSON.stringify({date:TODAY,lines:DISC_LINES},null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=`discussion_${TODAY}.json`;
-  a.click();
-  toast('Discussion exported');
+  sh.setColumnWidths(1, 10, 90);
+  sh.setColumnWidth(9, 130);
+  sh.setColumnWidth(10, 90);
+  sh.setFrozenRows(2);
+  sh.setTabColor(C.gold);
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// GOOGLE SHEETS SYNC
+// TAB 2 — ⚡ LIVE TRACKER  (one row per student, updated by tracker)
 // ═══════════════════════════════════════════════════════════════════
+function buildLiveTrackerTab(ss) {
+  let sh = getOrCreate(ss, T_LIVE);
+  sh.clearContents(); sh.clearFormats();
 
-// PULL — read CSV (works when sheet is "Anyone with link can view")
-async function syncFromSheets(){
-  showOverlay('Pulling from Google Sheets…','Fetching CSV');
-  try{
-    const r = await fetch(CSV_URL,{cache:'no-cache'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const csv = await r.text();
-    parseCSV(csv);
-    const ts = new Date().toISOString();
-    localStorage.setItem('drexel_lastsync',ts);
-    saveLocal();
-    rerenderDesks();
-    updateStats();
-    hideOverlay();
-    setSyncPill(true, new Date(ts).toLocaleTimeString());
-    toast('✓ Pulled from Sheets');
-  }catch(e){
-    hideOverlay();
-    setSyncPill(false);
-    toast('⚠ Pull failed — share sheet as "Anyone with link"');
-  }
-}
+  const headers = [
+    'Student ID', 'Last Name', 'First Name', 'Cluster',
+    'Dragon $', 'Participation', 'Effort',
+    'Discussion Turns', 'LAP 1', 'LAP 2', 'LAP 3',
+    'Absent?', 'Notes', 'Last Updated'
+  ];
 
-function parseCSV(csv){
-  const rows=csv.trim().split('\n').map(r=>r.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
-  if(rows.length<2) return;
-  const hdr=rows[0].map(h=>h.toLowerCase());
-  const col=(...names)=>{ for(const n of names){ const i=hdr.findIndex(h=>h.includes(n)); if(i>=0)return i; } return -1; };
-  const iName  = col('name','student');
-  const iCoins = col('coin','dragon','dollar');
-  const iPart  = col('participation','part');
-  const iEff   = col('effort');
-  const iDisc  = col('discussion','disc');
-  const iL1    = col('lap1','lap 1');
-  const iL2    = col('lap2','lap 2');
-  const iL3    = col('lap3','lap 3');
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.blue);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(3);
 
-  for(let i=1;i<rows.length;i++){
-    const row=rows[i];
-    if(!row[iName]||row[iName].length<2) continue;
-    const match=fuzzyMatch(row[iName]);
-    if(!match) continue;
-    const s=SD[match];
-    if(iCoins>=0) s.coins        = parseNum(row[iCoins]);
-    if(iPart >=0) s.participation= parseNum(row[iPart]);
-    if(iEff  >=0) s.effort       = parseNum(row[iEff]);
-    if(iDisc >=0) s.discussion   = parseNum(row[iDisc]);
-    if(iL1   >=0 && row[iL1]) s.mastery.lap1=row[iL1].toLowerCase();
-    if(iL2   >=0 && row[iL2]) s.mastery.lap2=row[iL2].toLowerCase();
-    if(iL3   >=0 && row[iL3]) s.mastery.lap3=row[iL3].toLowerCase();
-  }
-}
+  const sorted = sortedRoster();
+  const rows = sorted.map(s => [
+    s.id, s.last, s.first, s.cluster || '',
+    0, 0, '', 0, '', '', '', '', '', ''
+  ]);
+  sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
 
-// PUSH single student — fires immediately on each button click
-// Uses Apps Script Web App (doPost) for authenticated writes
-async function pushToSheet(name){
-  if(!SCRIPT_URL) return; // silent if no URL configured
-  const s = SD[name];
-  const payload = {
-    action: 'upsert',
-    date:   TODAY,
-    name:   s.name,
-    coins:  s.coins,
-    participation: s.participation,
-    effort: s.effort,
-    discussion: s.discussion,
-    lap1: s.mastery.lap1||'',
-    lap2: s.mastery.lap2||'',
-    lap3: s.mastery.lap3||'',
-  };
-  try{
-    await fetch(SCRIPT_URL,{
-      method:'POST',
-      mode:'no-cors', // Apps Script requires this from browser
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload),
-    });
-  }catch(e){ /* silent fail — data safe in localStorage */ }
-}
+  const nr = sorted.length + 50;
 
-// PUSH ALL — full batch push
-async function pushAllToSheets(){
-  if(!SCRIPT_URL){
-    toast('⚠ Paste your Apps Script URL in the setup bar first');
-    document.getElementById('setupNotice').style.display='flex';
-    return;
-  }
-  showOverlay('Pushing to Google Sheets…','Sending all student data');
-  for(const r of ROSTER){
-    await pushToSheet(r.name);
-    await new Promise(res=>setTimeout(res,80));
-  }
-  hideOverlay();
-  toast('✓ All data pushed to Sheets');
-}
+  // ── Dropdowns ──
+  addDropdown(sh, 2, 7,  nr, 1, OPT_EFFORT);    // Effort
+  addDropdown(sh, 2, 9,  nr, 1, OPT_MASTERY);   // LAP 1
+  addDropdown(sh, 2, 10, nr, 1, OPT_MASTERY);   // LAP 2
+  addDropdown(sh, 2, 11, nr, 1, OPT_MASTERY);   // LAP 3
+  addDropdown(sh, 2, 12, nr, 1, ['Yes', 'No']); // Absent
 
-function fuzzyMatch(raw){
-  if(SD[raw]) return raw;
-  const low=raw.toLowerCase();
-  for(const k of Object.keys(SD)){
-    if(k.toLowerCase()===low) return k;
-    if(k.toLowerCase().includes(low)||low.includes(k.toLowerCase())) return k;
-  }
-  return null;
-}
-function parseNum(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+  // ── Conditional formatting ──
+  applyMasteryFormat(sh, 9,  nr);
+  applyMasteryFormat(sh, 10, nr);
+  applyMasteryFormat(sh, 11, nr);
+  applyAbsentFormat(sh, 12, nr);
 
-// ═══════════════════════════════════════════════════════════════════
-// PAGE SWITCHER
-// ═══════════════════════════════════════════════════════════════════
-function switchPage(id, btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  btn.classList.add('active');
-  if(id==='disc'){
-    setTimeout(()=>{positionDiscSeats();drawDiscLines();},50);
-  }
+  // ── Column widths ──
+  [85, 145, 110, 60, 75, 90, 110, 90, 100, 100, 100, 65, 160, 130]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  applyAltRows(sh, 2, sorted.length + 1, headers.length);
+  sh.getRange(2, 5, nr, 1).setNumberFormat('0');
+  sh.getRange(2, 6, nr, 1).setNumberFormat('0');
+  sh.getRange(2, 8, nr, 1).setNumberFormat('0');
+  sh.setTabColor(C.blue);
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// UI HELPERS
+// TAB 3 — 👥 ROSTER  (master list, cumulative totals)
 // ═══════════════════════════════════════════════════════════════════
-function showOverlay(msg,sub){
-  document.getElementById('sovMsg').textContent=msg;
-  document.getElementById('sovSub').textContent=sub;
-  document.getElementById('soverlay').classList.add('active');
-}
-function hideOverlay(){ document.getElementById('soverlay').classList.remove('active'); }
-function setSyncPill(ok,ts=''){
-  const p=document.getElementById('syncPill');
-  const d=document.getElementById('syncDot');
-  const l=document.getElementById('syncLabel');
-  p.className='sync-pill '+(ok?'ok':'err');
-  d.className='sync-dot'+(ok?' pulse':'');
-  l.textContent=ok?`Synced ${ts}`:'Sync failed';
-}
-let toastT;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  clearTimeout(toastT);
-  toastT=setTimeout(()=>el.classList.remove('show'),2400);
-}
-</script>
+function buildRosterTab(ss) {
+  let sh = getOrCreate(ss, T_ROSTER);
+  sh.clearContents(); sh.clearFormats();
 
-<!-- ══ APPS SCRIPT GUIDE ══════════════════════════════════════════ -->
-<!--
-To enable live push to Google Sheets:
+  const headers = [
+    'Student ID', 'Last Name', 'First Name', 'Cluster',
+    'Total 🐉$', 'Total Participation', 'Total Discussion',
+    'Avg Effort', 'LAP 1', 'LAP 2', 'LAP 3',
+    'Mastery Trend', 'Coach Notes', 'Last Updated'
+  ];
 
-1. Open your Google Sheet → Extensions → Apps Script
-2. Paste this code:
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.green);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(3);
+
+  const sorted = sortedRoster();
+  const rows = sorted.map(s => [
+    s.id, s.last, s.first, s.cluster || '',
+    0, 0, 0, '', '', '', '', '', '', ''
+  ]);
+  sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+  const nr = sorted.length + 20;
+  addDropdown(sh, 2,  9, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2, 10, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2, 11, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2, 12, nr, 1, OPT_TREND);
+
+  applyMasteryFormat(sh,  9, nr);
+  applyMasteryFormat(sh, 10, nr);
+  applyMasteryFormat(sh, 11, nr);
+
+  [85, 145, 110, 60, 80, 110, 100, 80, 100, 100, 100, 120, 200, 130]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  applyAltRows(sh, 2, sorted.length + 1, headers.length);
+  sh.getRange(2, 5, nr, 3).setNumberFormat('0');
+  sh.setTabColor(C.green);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 4 — 🎯 MASTERY  (LAP 1/2/3 per student with history)
+// ═══════════════════════════════════════════════════════════════════
+function buildMasteryTab(ss) {
+  let sh = getOrCreate(ss, T_MASTERY);
+  sh.clearContents(); sh.clearFormats();
+
+  const headers = [
+    'Student ID', 'Last Name', 'First Name', 'Cluster',
+    'LAP 1', 'LAP 1 Date', 'LAP 1 Notes',
+    'LAP 2', 'LAP 2 Date', 'LAP 2 Notes',
+    'LAP 3', 'LAP 3 Date', 'LAP 3 Notes',
+    'Overall Trend', 'Teacher Comment'
+  ];
+
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.purple);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(3);
+
+  const sorted = sortedRoster();
+  const rows = sorted.map(s => [
+    s.id, s.last, s.first, s.cluster || '',
+    '', '', '', '', '', '', '', '', '', '', ''
+  ]);
+  sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+  const nr = sorted.length + 20;
+  addDropdown(sh, 2,  5, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2,  8, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2, 11, nr, 1, OPT_MASTERY);
+  addDropdown(sh, 2, 14, nr, 1, OPT_TREND);
+
+  applyMasteryFormat(sh,  5, nr);
+  applyMasteryFormat(sh,  8, nr);
+  applyMasteryFormat(sh, 11, nr);
+
+  [85, 145, 110, 60, 100, 90, 160, 100, 90, 160, 100, 90, 160, 120, 200]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  // Date cols: format as date
+  [6, 9, 12].forEach(c => sh.getRange(2, c, nr, 1).setNumberFormat('mm/dd/yyyy'));
+
+  applyAltRows(sh, 2, sorted.length + 1, headers.length);
+  sh.setTabColor(C.purple);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 5 — 🐉 DRAGON DOLLARS  (weekly coin tracker)
+// ═══════════════════════════════════════════════════════════════════
+function buildCoinsTab(ss) {
+  let sh = getOrCreate(ss, T_COINS);
+  sh.clearContents(); sh.clearFormats();
+
+  // Sub-header: week labels
+  const weekHeaders = ['', '', '', '', '', 'Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6', 'Wk 7', 'Wk 8', 'Wk 9', 'Wk 10', ''];
+  const headers = [
+    'Student ID', 'Last Name', 'First Name', 'Cluster', 'TOTAL 🐉$',
+    'Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5',
+    'Wk 6', 'Wk 7', 'Wk 8', 'Wk 9', 'Wk 10', 'Notes'
+  ];
+
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.gold);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(4);
+
+  const sorted = sortedRoster();
+
+  // Pre-populate rows
+  const rows = sorted.map(s => [
+    s.id, s.last, s.first, s.cluster || '',
+    '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ''
+  ]);
+  sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+  // SUM formula for total column (E)
+  for (let r = 2; r <= sorted.length + 1; r++) {
+    sh.getRange(r, 5).setFormula(`=SUM(F${r}:O${r})`);
+  }
+
+  // Style total column
+  sh.getRange(2, 5, sorted.length, 1)
+    .setFontWeight('bold').setFontColor(C.gold)
+    .setNumberFormat('0');
+
+  // Conditional: gradient on total (color-scale: white → gold)
+  const totalRange = sh.getRange(2, 5, sorted.length + 20, 1);
+  const gradRule = SpreadsheetApp.newConditionalFormatRule()
+    .setGradientMaxpoint(C.goldLight)
+    .setGradientMinpoint('#ffffff')
+    .setRanges([totalRange])
+    .build();
+
+  // Highlight top earner row
+  const topRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=$E2=MAX($E$2:$E$200)`)
+    .setBackground(C.goldLight)
+    .setFontColor(C.goldDark)
+    .setRanges([sh.getRange(2, 1, sorted.length + 20, headers.length)])
+    .build();
+
+  sh.setConditionalFormatRules([gradRule, topRule]);
+
+  [85, 145, 110, 60, 75, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 160]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  sh.getRange(2, 6, sorted.length + 20, 10).setNumberFormat('0');
+  applyAltRows(sh, 2, sorted.length + 1, headers.length);
+  sh.setTabColor(C.amber);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 6 — 💬 DISCUSSION LOG
+// ═══════════════════════════════════════════════════════════════════
+function buildDiscussionTab(ss) {
+  let sh = getOrCreate(ss, T_DISC);
+  sh.clearContents(); sh.clearFormats();
+
+  const headers = [
+    'Date', 'Turn #', 'Time',
+    'Speaker', 'Speaker ID', 'Responding To', 'Listener ID',
+    'Type', 'Speaker Cluster', 'Listener Cluster', 'Notes'
+  ];
+
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.teal);
+  sh.setFrozenRows(1);
+
+  const names = sortedRoster().map(s => s.first + ' ' + s.last);
+  const nr    = 300;
+
+  addDropdown(sh, 2,  4, nr, 1, names);           // Speaker
+  addDropdown(sh, 2,  6, nr, 1, names);           // Responding To
+  addDropdown(sh, 2,  8, nr, 1, OPT_DISCTYPE);    // Type
+
+  // Conditional: color by discussion type
+  const typeRange = sh.getRange(2, 8, nr, 1);
+  const typeRules = [
+    { val: 'Responds To', bg: C.tealLight,   fg: C.tealDark   },
+    { val: 'Builds On',   bg: C.greenLight,  fg: C.greenDark  },
+    { val: 'Challenges',  bg: C.amberLight,  fg: C.amberDark  },
+    { val: 'New Idea',    bg: C.purpleLight, fg: C.purpleDark },
+    { val: 'Question',    bg: C.blueLight,   fg: C.blue       },
+  ].map(r =>
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(r.val)
+      .setBackground(r.bg).setFontColor(r.fg)
+      .setRanges([typeRange]).build()
+  );
+  sh.setConditionalFormatRules(typeRules);
+
+  [85, 50, 75, 155, 85, 155, 85, 100, 70, 70, 200]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  sh.setTabColor(C.teal);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 7 — 📝 COACH NOTES
+// ═══════════════════════════════════════════════════════════════════
+function buildNotesTab(ss) {
+  let sh = getOrCreate(ss, T_NOTES);
+  sh.clearContents(); sh.clearFormats();
+
+  const headers = [
+    'Student ID', 'Last Name', 'First Name', 'Cluster',
+    'Skills Goal', 'Skills Status',
+    'Habit Goal', 'Habit Status',
+    'Date', 'Note', 'Action Step', 'Follow-up Date', 'Resolved?'
+  ];
+
+  writeHeaderRow(sh, 1, headers, C.bgDark, C.amber);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(3);
+
+  const sorted = sortedRoster();
+  const rows = sorted.map(s => [
+    s.id, s.last, s.first, s.cluster || '',
+    '', '', '', '', today(), '', '', '', ''
+  ]);
+  sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+  const nr = sorted.length + 30;
+  addDropdown(sh, 2,  6, nr, 1, ['On Track', 'In Progress', 'Not Started', 'Achieved']);
+  addDropdown(sh, 2,  8, nr, 1, ['On Track', 'In Progress', 'Not Started', 'Achieved']);
+  addDropdown(sh, 2, 13, nr, 1, ['Yes', 'No', 'Ongoing']);
+
+  // Conditional: resolved column
+  const resolvedRange = sh.getRange(2, 13, nr, 1);
+  const resolvedRules = [
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Yes').setBackground(C.greenLight).setFontColor(C.greenDark)
+      .setRanges([resolvedRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('No').setBackground(C.redLight).setFontColor(C.redDark)
+      .setRanges([resolvedRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Ongoing').setBackground(C.amberLight).setFontColor(C.amberDark)
+      .setRanges([resolvedRange]).build(),
+  ];
+  sh.setConditionalFormatRules(resolvedRules);
+
+  [85, 145, 110, 60, 180, 100, 180, 100, 85, 240, 200, 100, 80]
+    .forEach((w, i) => sh.setColumnWidth(i + 1, w));
+
+  sh.getRange(2, 9, nr, 1).setNumberFormat('mm/dd/yyyy');
+  sh.getRange(2, 12, nr, 1).setNumberFormat('mm/dd/yyyy');
+  applyAltRows(sh, 2, sorted.length + 1, headers.length);
+  sh.setTabColor(C.amber);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WEB API — doGet / doPost  (called by HTML tracker)
+// ═══════════════════════════════════════════════════════════════════
+function doGet(e) {
+  const action = (e && e.parameter && e.parameter.action) || '';
+  if (action === 'pull') return pullAllData();
+  if (action === 'ping') return jsonResponse({ status: 'ok', students: DREXEL_STUDENTS.length });
+  return jsonResponse({ status: 'ok', message: 'Drexel Tracker is live.' });
+}
 
 function doPost(e) {
-  const data = JSON.parse(e.postData.contents);
-  const sheet = SpreadsheetApp.openById('1YwaaYZkXZENl-fvrsC57gU10NW_b1O5gu340FJ6pL_I')
-                               .getSheetByName('Sheet1');
-  const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
-  const nameCol = headers.indexOf('Name')+1;
-  const dateCol = headers.indexOf('Date')+1;
-
-  // Find existing row or append
-  const vals = sheet.getDataRange().getValues();
-  let row = -1;
-  for(let i=1;i<vals.length;i++){
-    if(vals[i][nameCol-1]===data.name && vals[i][dateCol-1]===data.date){ row=i+1; break; }
+  try {
+    const data   = JSON.parse(e.postData ? e.postData.contents : '{}');
+    const action = data.action || 'upsert';
+    if (action === 'upsert')    return upsertLive(data);
+    if (action === 'log_disc')  return logDiscLine(data);
+    if (action === 'batch')     return batchUpsert(data);
+    if (action === 'reset_day') return resetDay(data);
+    return jsonResponse({ status: 'error', message: 'Unknown action' });
+  } catch (err) {
+    return jsonResponse({ status: 'error', message: err.toString() });
   }
-  if(row===-1){ row=sheet.getLastRow()+1; }
-
-  const map = {
-    'Name':data.name,'Date':data.date,'Coins':data.coins,
-    'Participation':data.participation,'Effort':data.effort,
-    'Discussion':data.discussion,'LAP1':data.lap1,'LAP2':data.lap2,'LAP3':data.lap3
-  };
-  headers.forEach((h,i)=>{ if(map[h]!==undefined) sheet.getRange(row,i+1).setValue(map[h]); });
-
-  return ContentService.createTextOutput('ok');
 }
 
-3. Deploy → New deployment → Web App → "Anyone" can access
-4. Copy the Web App URL and paste it into the setup bar at the top of this page
--->
+// ── Upsert one student into Live Tracker + Roster ──
+function upsertLive(data) {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const rost = ss.getSheetByName(T_ROSTER);
+  const mast = ss.getSheetByName(T_MASTERY);
+  const name = (data.name || '').trim();
+  if (!name) return jsonResponse({ status: 'error', message: 'No name' });
 
-</body>
-</html>
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MM/dd/yyyy HH:mm:ss');
+
+  // Find row by name match (col C = first name, col B = last name)
+  const liveRow = findRowByName(live, name);
+  if (liveRow > 0) {
+    const hdr = live.getRange(1, 1, 1, 14).getValues()[0];
+    setByHeader(live, liveRow, hdr, {
+      'Dragon $':        numOr(data.coins, 0),
+      'Participation':   numOr(data.participation, 0),
+      'Effort':          data.effort || '',
+      'Discussion Turns':numOr(data.discussion, 0),
+      'LAP 1':           data.lap1 || '',
+      'LAP 2':           data.lap2 || '',
+      'LAP 3':           data.lap3 || '',
+      'Last Updated':    now,
+    });
+  }
+
+  // Mirror to Roster (cumulative)
+  if (rost) {
+    const rostRow = findRowByName(rost, name);
+    if (rostRow > 0) {
+      const hdr = rost.getRange(1, 1, 1, 14).getValues()[0];
+      setByHeader(rost, rostRow, hdr, {
+        'Total 🐉$':         numOr(data.coins, 0),
+        'Total Participation': numOr(data.participation, 0),
+        'Total Discussion':    numOr(data.discussion, 0),
+        'LAP 1':               data.lap1 || '',
+        'LAP 2':               data.lap2 || '',
+        'LAP 3':               data.lap3 || '',
+        'Last Updated':        now,
+      });
+    }
+  }
+
+  // Mirror mastery to Mastery tab
+  if (mast && (data.lap1 || data.lap2 || data.lap3)) {
+    const mastRow = findRowByName(mast, name);
+    if (mastRow > 0) {
+      const hdr = mast.getRange(1, 1, 1, 15).getValues()[0];
+      const updates = {};
+      if (data.lap1) { updates['LAP 1'] = data.lap1; updates['LAP 1 Date'] = now.slice(0,10); }
+      if (data.lap2) { updates['LAP 2'] = data.lap2; updates['LAP 2 Date'] = now.slice(0,10); }
+      if (data.lap3) { updates['LAP 3'] = data.lap3; updates['LAP 3 Date'] = now.slice(0,10); }
+      setByHeader(mast, mastRow, hdr, updates);
+    }
+  }
+
+  return jsonResponse({ status: 'ok', name });
+}
+
+// ── Log one discussion turn ──
+function logDiscLine(data) {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const disc = ss.getSheetByName(T_DISC);
+  const now  = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'HH:mm:ss');
+
+  // Resolve cluster from name
+  const fromS = DREXEL_STUDENTS.find(s =>
+    (s.first + ' ' + s.last).toLowerCase().includes((data.from||'').toLowerCase()));
+  const toS   = DREXEL_STUDENTS.find(s =>
+    (s.first + ' ' + s.last).toLowerCase().includes((data.to||'').toLowerCase()));
+
+  disc.appendRow([
+    data.date || today(),
+    data.turn || (disc.getLastRow()),
+    now,
+    data.from || '',
+    fromS ? fromS.id : '',
+    data.to   || '',
+    toS   ? toS.id   : '',
+    data.type || 'Responds To',
+    fromS ? (fromS.cluster || '') : '',
+    toS   ? (toS.cluster   || '') : '',
+    data.notes || '',
+  ]);
+
+  // Increment Discussion Turns in Live Tracker
+  const live    = ss.getSheetByName(T_LIVE);
+  const liveRow = findRowByName(live, data.from || '');
+  if (liveRow > 0) {
+    const hdr  = live.getRange(1, 1, 1, 14).getValues()[0];
+    const dCol = hdr.indexOf('Discussion Turns') + 1;
+    if (dCol > 0) {
+      const cur = live.getRange(liveRow, dCol).getValue() || 0;
+      live.getRange(liveRow, dCol).setValue(cur + 1);
+    }
+  }
+
+  return jsonResponse({ status: 'ok' });
+}
+
+// ── Batch push ──
+function batchUpsert(data) {
+  (data.students || []).forEach(s => upsertLive(s));
+  return jsonResponse({ status: 'ok', count: (data.students || []).length });
+}
+
+// ── Pull today's data ──
+function pullAllData() {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const live  = ss.getSheetByName(T_LIVE);
+  if (!live) return jsonResponse({ status: 'ok', students: [] });
+
+  const all = live.getDataRange().getValues();
+  const hdr = all[0];
+  const out = [];
+  for (let i = 1; i < all.length; i++) {
+    const row = all[i];
+    if (!row[1] && !row[2]) continue; // skip blank rows
+    const obj = {};
+    hdr.forEach((h, j) => { obj[h] = row[j]; });
+    out.push(obj);
+  }
+  return jsonResponse({ status: 'ok', students: out });
+}
+
+// ── Reset today ──
+function resetDay(data) {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const hdr  = live.getRange(1, 1, 1, 14).getValues()[0];
+  const cols = ['Dragon $','Participation','Effort','Discussion Turns','LAP 1','LAP 2','LAP 3'];
+  const colIdxs = cols.map(c => hdr.indexOf(c) + 1).filter(c => c > 0);
+  const nr = live.getLastRow();
+  for (let r = 2; r <= nr; r++) {
+    colIdxs.forEach(c => live.getRange(r, c).setValue(c === hdr.indexOf('Effort')+1 ? '' : 0));
+  }
+  return jsonResponse({ status: 'ok' });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MENU ACTION FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function populateAllRosters() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  [T_LIVE, T_ROSTER, T_MASTERY, T_COINS, T_NOTES].forEach(name => {
+    const sh = ss.getSheetByName(name);
+    if (!sh) return;
+    const sorted = sortedRoster();
+    // Only add rows for students not already present
+    sorted.forEach(s => {
+      const row = findRowById(sh, s.id);
+      if (row < 0) {
+        sh.appendRow([s.id, s.last, s.first, s.cluster || ''].concat(new Array(20).fill('')));
+      }
+    });
+  });
+  SpreadsheetApp.getUi().alert('✓ Roster rows verified / added for all tabs.');
+}
+
+function clearTodayUI() {
+  const ui = SpreadsheetApp.getUi();
+  const resp = ui.alert(
+    'Clear today\'s data?',
+    'This will zero out Dragon $, Participation, Effort, Discussion, and LAP scores in the Live Tracker.\n\nContinue?',
+    ui.ButtonSet.YES_NO
+  );
+  if (resp === ui.Button.YES) {
+    resetDay({});
+    ui.alert('✓ Today\'s Live Tracker has been cleared.');
+  }
+}
+
+function masterySnapshotUI() {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const mast = ss.getSheetByName(T_MASTERY);
+  if (!mast) { SpreadsheetApp.getUi().alert('Mastery tab not found.'); return; }
+  const all  = mast.getDataRange().getValues();
+  const hdr  = all[0];
+  const iL1  = hdr.indexOf('LAP 1');
+  const iL2  = hdr.indexOf('LAP 2');
+  const iL3  = hdr.indexOf('LAP 3');
+  const iN   = hdr.indexOf('First Name');
+  const counts = { Proficient: 0, Approaching: 0, Emerging: 0, Unset: 0 };
+  const emerging = [];
+  for (let i = 1; i < all.length; i++) {
+    const row = all[i];
+    if (!row[iN]) continue;
+    [iL1, iL2, iL3].forEach(col => {
+      const v = row[col];
+      if (OPT_MASTERY.includes(v)) counts[v]++;
+      else counts.Unset++;
+    });
+    if (row[iL1] === 'Emerging' || row[iL2] === 'Emerging') emerging.push(row[iN] + ' ' + all[i][1]);
+  }
+  SpreadsheetApp.getUi().alert(
+    '🎯 Mastery Snapshot\n\n' +
+    '✅ Proficient:   ' + counts.Proficient  + '\n' +
+    '~ Approaching: ' + counts.Approaching + '\n' +
+    '▲ Emerging:    ' + counts.Emerging    + '\n' +
+    '○ Not Set:     ' + counts.Unset       + '\n\n' +
+    (emerging.length ? 'Emerging students:\n• ' + emerging.join('\n• ') : 'No emerging students flagged.')
+  );
+}
+
+function coinLeaderboardUI() {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const coin = ss.getSheetByName(T_COINS);
+  if (!coin) { SpreadsheetApp.getUi().alert('Dragon $ tab not found.'); return; }
+  const all  = coin.getDataRange().getValues();
+  const hdr  = all[0];
+  const iT   = hdr.indexOf('TOTAL 🐉$');
+  const iF   = hdr.indexOf('First Name');
+  const iL   = hdr.indexOf('Last Name');
+  const data = [];
+  for (let i = 1; i < all.length; i++) {
+    if (!all[i][iF]) continue;
+    data.push({ name: all[i][iF] + ' ' + all[i][iL], total: all[i][iT] || 0 });
+  }
+  data.sort((a, b) => b.total - a.total);
+  const top = data.slice(0, 10).map((d, i) => `${i+1}. ${d.name} — ${d.total} 🐉$`).join('\n');
+  SpreadsheetApp.getUi().alert('🐉 Dragon $ Top 10\n\n' + top);
+}
+
+function atRiskUI() {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const all  = live.getDataRange().getValues();
+  const hdr  = all[0];
+  const iF   = hdr.indexOf('First Name');
+  const iL   = hdr.indexOf('Last Name');
+  const iL1  = hdr.indexOf('LAP 1');
+  const iL2  = hdr.indexOf('LAP 2');
+  const iP   = hdr.indexOf('Participation');
+  const atRisk = [];
+  for (let i = 1; i < all.length; i++) {
+    const row = all[i];
+    if (!row[iF]) continue;
+    if (row[iL1] === 'Emerging' || row[iL2] === 'Emerging' || numOr(row[iP],0) === 0) {
+      atRisk.push(`${row[iF]} ${row[iL]}` + (row[iL1]==='Emerging'?' [L1:Emerging]':'') + (row[iL2]==='Emerging'?' [L2:Emerging]':'') + (numOr(row[iP],0)===0?' [No Part.]':''));
+    }
+  }
+  SpreadsheetApp.getUi().alert(
+    '⚠ At-Risk Students (' + atRisk.length + ')\n\n' +
+    (atRisk.length ? atRisk.join('\n') : '✅ No at-risk students flagged today.')
+  );
+}
+
+function addStudentUI() {
+  const ui   = SpreadsheetApp.getUi();
+  const resp = ui.prompt('Add Student', 'Enter: LastName, FirstName, StudentID, Cluster (comma-separated)', ui.ButtonSet.OK_CANCEL);
+  if (resp.getSelectedButton() !== ui.Button.OK) return;
+  const parts = resp.getResponseText().split(',').map(p => p.trim());
+  if (parts.length < 3) { ui.alert('Need at least: Last, First, ID'); return; }
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  [T_LIVE, T_ROSTER, T_MASTERY, T_NOTES].forEach(name => {
+    const sh = ss.getSheetByName(name);
+    if (sh) sh.appendRow([parts[2], parts[0], parts[1], parts[3]||''].concat(new Array(15).fill('')));
+  });
+  ui.alert('✓ ' + parts[1] + ' ' + parts[0] + ' added to all tabs.');
+}
+
+function bulkCoinsUI() {
+  const ui   = SpreadsheetApp.getUi();
+  const resp = ui.prompt('Award Dragon $', 'Amount to add to ALL students:', ui.ButtonSet.OK_CANCEL);
+  if (resp.getSelectedButton() !== ui.Button.OK) return;
+  const amt  = parseInt(resp.getResponseText());
+  if (isNaN(amt)) { ui.alert('Invalid amount.'); return; }
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const hdr  = live.getRange(1, 1, 1, 14).getValues()[0];
+  const col  = hdr.indexOf('Dragon $') + 1;
+  for (let r = 2; r <= live.getLastRow(); r++) {
+    const cur = live.getRange(r, col).getValue() || 0;
+    live.getRange(r, col).setValue(cur + amt);
+  }
+  ui.alert('✓ Added ' + amt + ' 🐉$ to all ' + (live.getLastRow()-1) + ' students.');
+}
+
+function discSummaryUI() {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const disc = ss.getSheetByName(T_DISC);
+  const all  = disc.getDataRange().getValues();
+  const hdr  = all[0];
+  const iS   = hdr.indexOf('Speaker');
+  const iT   = hdr.indexOf('Type');
+  const counts = {};
+  const typeCounts = {};
+  for (let i = 1; i < all.length; i++) {
+    const row = all[i];
+    if (!row[iS]) continue;
+    counts[row[iS]] = (counts[row[iS]] || 0) + 1;
+    typeCounts[row[iT]] = (typeCounts[row[iT]] || 0) + 1;
+  }
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8)
+    .map(([n,c]) => `  ${n}: ${c} turns`).join('\n');
+  const types = Object.entries(typeCounts).map(([t,c])=>`  ${t}: ${c}`).join('\n');
+  SpreadsheetApp.getUi().alert(
+    '💬 Discussion Summary\n\nTotal turns: ' + (all.length-1) +
+    '\n\nTop speakers:\n' + (top || '  None') +
+    '\n\nBy type:\n' + (types || '  None')
+  );
+}
+
+function showWebAppUrl() {
+  SpreadsheetApp.getUi().alert(
+    'Web App URL\n\n' +
+    'To find your URL:\n' +
+    '1. Extensions → Apps Script\n' +
+    '2. Deploy → Manage Deployments\n' +
+    '3. Copy the Web App URL\n' +
+    '4. Paste into the setup bar in drexel_live_tracker.html\n\n' +
+    'If not deployed yet:\n' +
+    'Deploy → New Deployment → Web App\n' +
+    'Execute as: Me  |  Access: Anyone'
+  );
+}
+
+function showHelp() {
+  SpreadsheetApp.getUi().alert(
+    'ℹ Drexel Tracker — Field Guide\n\n' +
+    '📊 Dashboard    — Live stats + formulas, auto-updates\n' +
+    '⚡ Live Tracker — Today\'s class data (HTML tracker writes here)\n' +
+    '👥 Roster       — Cumulative totals per student\n' +
+    '🎯 Mastery      — LAP 1/2/3 with dates + trend\n' +
+    '🐉 Dragon $     — Weekly coin totals, auto-summed\n' +
+    '💬 Discussion   — Every turn logged with type + clusters\n' +
+    '📝 Notes        — Coach goals, action steps, follow-ups\n\n' +
+    'Mastery levels:\n' +
+    '  ✅ Proficient  = Green\n' +
+    '  ~ Approaching = Amber\n' +
+    '  ▲ Emerging    = Red\n\n' +
+    'Every button in the HTML tracker auto-pushes to ⚡ Live Tracker.'
+  );
+}
+
+function archiveTodayUI() {
+  SpreadsheetApp.getUi().alert('Archive feature: copy the Live Tracker tab manually (right-click tab → Duplicate) then rename with today\'s date. A full auto-archive will be added in a future update.');
+}
+
+function resetEffortUI() {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const hdr  = live.getRange(1, 1, 1, 14).getValues()[0];
+  const col  = hdr.indexOf('Effort') + 1;
+  if (col < 1) return;
+  for (let r = 2; r <= live.getLastRow(); r++) live.getRange(r, col).setValue('');
+  SpreadsheetApp.getUi().alert('✓ Effort column cleared for new day.');
+}
+
+function bulkMasteryUI() {
+  const ui   = SpreadsheetApp.getUi();
+  const resp = ui.prompt(
+    'Bulk Set Mastery',
+    'Enter: LAP number (1, 2, or 3), then level (Proficient / Approaching / Emerging)\nExample:  1, Proficient',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (resp.getSelectedButton() !== ui.Button.OK) return;
+  const parts = resp.getResponseText().split(',').map(p => p.trim());
+  if (parts.length < 2) { ui.alert('Need: LAP number, Level'); return; }
+  const lapCol = 'LAP ' + parts[0];
+  const level  = parts[1];
+  if (!OPT_MASTERY.includes(level)) { ui.alert('Invalid level. Use: ' + OPT_MASTERY.join(', ')); return; }
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const live = ss.getSheetByName(T_LIVE);
+  const hdr  = live.getRange(1, 1, 1, 14).getValues()[0];
+  const col  = hdr.indexOf(lapCol) + 1;
+  if (col < 1) { ui.alert('Column not found: ' + lapCol); return; }
+  for (let r = 2; r <= live.getLastRow(); r++) live.getRange(r, col).setValue(level);
+  ui.alert('✓ Set ' + lapCol + ' = ' + level + ' for all students.');
+}
+
+function exportRosterCSV() {
+  const sorted = sortedRoster();
+  const rows   = [['Student ID','Last Name','First Name','Cluster','Full Name']];
+  sorted.forEach(s => rows.push([s.id, s.last, s.first, s.cluster||'', s.first+' '+s.last]));
+  const blob = Utilities.newBlob(
+    rows.map(r => r.join(',')).join('\n'),
+    'text/csv',
+    'drexel_roster.csv'
+  );
+  SpreadsheetApp.getUi().alert('CSV generation note: to download, copy the data from the Roster tab or use File → Download → CSV.');
+}
+
+function generateWeeklySummary()  { masterySnapshotUI(); }
+function generateMasterySnapshot(){ masterySnapshotUI(); }
+function generateCoinLeaderboard(){ coinLeaderboardUI(); }
+function generateDiscReport()     { discSummaryUI(); }
+
+// ═══════════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════════
+
+function getOrCreate(ss, name) {
+  return ss.getSheetByName(name) || ss.insertSheet(name);
+}
+
+function writeHeaderRow(sh, row, headers, bg, fg) {
+  const range = sh.getRange(row, 1, 1, headers.length);
+  range.setValues([headers]);
+  range.setBackground(bg).setFontColor(fg)
+    .setFontWeight('bold').setFontSize(10)
+    .setVerticalAlignment('middle');
+  sh.setRowHeight(row, 28);
+}
+
+function styleHeader(sh, row, numCols, bg, fg) {
+  const r = sh.getRange(row, 1, 1, numCols);
+  r.setBackground(bg).setFontColor(fg).setFontWeight('bold').setFontSize(10);
+  sh.setFrozenRows(row);
+  sh.setRowHeight(row, 28);
+}
+
+function writeSectionTitle(sh, row, col, text, color) {
+  const cell = sh.getRange(col + row);
+  cell.setValue(text)
+    .setFontWeight('bold').setFontSize(9)
+    .setFontColor(color)
+    .setBackground(C.offWhite);
+  sh.setRowHeight(row, 20);
+}
+
+function addDropdown(sh, startRow, col, numRows, numCols, options) {
+  const rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(options, true)
+    .setAllowInvalid(false)
+    .build();
+  sh.getRange(startRow, col, numRows, numCols).setDataValidation(rule);
+}
+
+function applyMasteryFormat(sh, col, numRows) {
+  const range = sh.getRange(2, col, numRows, 1);
+  const rules = [
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Proficient').setBackground(C.greenLight).setFontColor(C.greenDark)
+      .setRanges([range]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Approaching').setBackground(C.amberLight).setFontColor(C.amberDark)
+      .setRanges([range]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Emerging').setBackground(C.redLight).setFontColor(C.redDark)
+      .setRanges([range]).build(),
+  ];
+  const existing = sh.getConditionalFormatRules();
+  sh.setConditionalFormatRules(existing.concat(rules));
+}
+
+function applyAbsentFormat(sh, col, numRows) {
+  const range = sh.getRange(2, col, numRows, 1);
+  const rules = [
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('Yes').setBackground(C.redLight).setFontColor(C.redDark)
+      .setRanges([range]).build(),
+  ];
+  const existing = sh.getConditionalFormatRules();
+  sh.setConditionalFormatRules(existing.concat(rules));
+}
+
+function applyAltRows(sh, startRow, numRows, numCols) {
+  for (let r = startRow; r < startRow + numRows; r++) {
+    if (r % 2 === 0) {
+      sh.getRange(r, 1, 1, numCols).setBackground(C.altRow);
+    }
+  }
+}
+
+function findRowByName(sh, name) {
+  if (!sh || !name) return -1;
+  const low  = name.trim().toLowerCase();
+  const data = sh.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const full = (String(data[i][2]) + ' ' + String(data[i][1])).trim().toLowerCase();
+    const rev  = (String(data[i][1]) + ' ' + String(data[i][2])).trim().toLowerCase();
+    if (full === low || rev === low || full.includes(low) || low.includes(full)) return i + 1;
+  }
+  return -1;
+}
+
+function findRowById(sh, id) {
+  if (!sh || !id) return -1;
+  const data = sh.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(id).trim()) return i + 1;
+  }
+  return -1;
+}
+
+function setByHeader(sh, rowNum, hdr, valueMap) {
+  Object.entries(valueMap).forEach(([h, v]) => {
+    const col = hdr.indexOf(h);
+    if (col >= 0) sh.getRange(rowNum, col + 1).setValue(v);
+  });
+}
+
+function jsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function numOr(v, def) {
+  const n = parseFloat(v);
+  return isNaN(n) ? def : n;
+}
+
+function today() {
+  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
