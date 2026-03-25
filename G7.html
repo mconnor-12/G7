@@ -98,13 +98,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sc-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
 .sc-val{font-size:16px;font-weight:700;font-family:'Syne',sans-serif;}
 
-/* ══ SEATING LAYOUT ═══════════════════════════════════════════════ */
-.room-wrap{padding:16px;}
+/* ── Desk left/right side tints — orientation aid ───────────── */
+.desk.desk-left {
+  border-left: 3px solid rgba(74,140,245,.45);
+  background-image: linear-gradient(to right, rgba(74,140,245,.06) 0%, transparent 40%);
+}
+.desk.desk-right {
+  border-right: 3px solid rgba(240,180,41,.45);
+  background-image: linear-gradient(to left, rgba(240,180,41,.06) 0%, transparent 40%);
+}
+.desk.desk-left .desk-name { color: var(--blue2); }
+.desk.desk-right .desk-name { color: var(--gold2); }
+/* Keep heat overrides visible on top */
+.desk.ht-low.desk-left, .desk.ht-low.desk-right,
+.desk.ht-mid.desk-left, .desk.ht-mid.desk-right,
+.desk.ht-high.desk-left, .desk.ht-high.desk-right,
+.desk.ht-great.desk-left, .desk.ht-great.desk-right {
+  background-image: none; /* let heatmap bg take over */
+}
+.desk.ht-low .desk-name, .desk.ht-mid .desk-name,
+.desk.ht-high .desk-name, .desk.ht-great .desk-name { color: var(--text); }
+
+/* disc sidebar left/right */
+.disc-grid-cell.dg-left { border-left: 2px solid rgba(74,140,245,.4); }
+.disc-grid-cell.dg-right { border-right: 2px solid rgba(240,180,41,.4); }
+.disc-grid-cell.dg-left .dgc-name { color: var(--blue2); }
+.disc-grid-cell.dg-right .dgc-name { color: var(--gold2); }
 .front-banner{
   background:var(--goldbg);border:1px solid rgba(240,180,41,.25);
   border-radius:8px;padding:9px 16px;text-align:center;
   font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
-  color:var(--gold2);margin-bottom:16px;letter-spacing:.04em;
+  color:var(--gold2);margin-top:16px;letter-spacing:.04em;
 }
 .seating-grid{
   display:grid;
@@ -726,9 +750,9 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 <!-- ══ PAGE: HEATMAP ══════════════════════════════════════════════ -->
 <div class="page active" id="page-heatmap">
 <div class="room-wrap">
-  <div class="front-banner">▲ FRONT OF ROOM — Drexel Melendez</div>
+  <div class="door-label" style="text-align:right;margin-bottom:8px;">DOOR ▶</div>
   <div class="seating-grid" id="seatingGrid"><!-- built by JS --></div>
-  <div class="door-label">DOOR ▶</div>
+  <div class="front-banner" style="margin-top:16px;margin-bottom:0;">▼ FRONT OF ROOM — Drexel Melendez</div>
 </div>
 </div><!-- /page-heatmap -->
 
@@ -799,7 +823,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
     <div class="dleg"><div class="dleg-line" style="background:#8b6cf7;"></div><span>New idea</span></div>
     <div class="dleg"><div class="dleg-line" style="background:#4a8cf5;"></div><span>Question</span></div>
     <div class="dleg"><div style="width:10px;height:10px;border-radius:2px;background:var(--gold2);opacity:.7;"></div><span>Q thread color</span></div>
-    <span style="margin-left:auto;font-family:'DM Mono';font-size:10px;color:var(--text2);" id="discFsTurnCount">0 turns</span>
+    <span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:.04em;">▼ FRONT OF ROOM</span>
+    <span style="font-family:'DM Mono';font-size:10px;color:var(--text2);margin-left:12px;" id="discFsTurnCount">0 turns</span>
   </div>
 </div>
 
@@ -1019,6 +1044,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
     <span style="font-size:10px;color:var(--text2);">Drag names between desks · Changes apply to Live Tracker + Discussion Map instantly</span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <button class="btn" onclick="addCluster()">+ Cluster</button>
+      <button class="btn btn-b" onclick="pullSeatingLayout()">↓ Pull from Sheets</button>
       <button class="btn btn-g" onclick="saveSeats()">✓ Save Layout</button>
       <button class="btn btn-r" onclick="resetSeats()">↺ Reset</button>
     </div>
@@ -1092,6 +1118,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
     <div class="dleg"><div class="dleg-line" style="background:var(--amber);"></div>Challenges</div>
     <div class="dleg"><div class="dleg-line" style="background:var(--purple);"></div>New idea</div>
     <div class="dleg"><div class="dleg-line" style="background:var(--blue);"></div>Question</div>
+    <span style="font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.04em;margin-left:16px;">▼ FRONT OF ROOM</span>
     <span style="margin-left:auto;font-family:'DM Mono';font-size:10px;" id="discFsTurnCount">0 turns</span>
   </div>
 </div>
@@ -1127,16 +1154,16 @@ const ROSTER = [
   {name:'Aris',         cluster:3}, {name:'Logan',        cluster:3}, {name:'Joshua',       cluster:3},
 ];
 
-// ── Seed flat positions from known coordinates (used before computeLayoutFlat runs) ──
+// ── Seed flat positions from known coordinates — fy FLIPPED (front=bottom) ──
 const DISC_POSITIONS_SEED = {
-  'Andry':       {fx:.10,fy:.18}, 'Samuel':     {fx:.10,fy:.32}, 'Dashaun':    {fx:.22,fy:.25},
-  'Sarah':       {fx:.10,fy:.50}, 'Dasha':      {fx:.10,fy:.64}, 'Osmari':     {fx:.22,fy:.56}, 'Wismarlin':  {fx:.22,fy:.70},
-  'John Thomas': {fx:.10,fy:.82}, 'frank-Isaiah':{fx:.22,fy:.87},'Xavier':     {fx:.10,fy:.93},
-  'Ethan':       {fx:.38,fy:.22}, 'Derek P':    {fx:.50,fy:.15}, 'Hector T':  {fx:.38,fy:.38},
-  'Emily':       {fx:.44,fy:.55}, 'Zoey':       {fx:.56,fy:.50}, 'Eli':        {fx:.44,fy:.70}, 'Hector H':  {fx:.56,fy:.65},
-  'Jazzia':      {fx:.75,fy:.12}, 'Saihana':    {fx:.87,fy:.18}, 'Raynell L': {fx:.88,fy:.30},
-  'Derek':       {fx:.75,fy:.44}, 'Ambar':      {fx:.88,fy:.42}, 'Sophia U':  {fx:.76,fy:.58}, 'Mike':       {fx:.88,fy:.56},
-  'Aris':        {fx:.76,fy:.73}, 'Logan':      {fx:.88,fy:.72}, 'Joshua':    {fx:.84,fy:.86},
+  'Andry':       {fx:.10,fy:.82}, 'Samuel':     {fx:.10,fy:.68}, 'Dashaun':    {fx:.22,fy:.75},
+  'Sarah':       {fx:.10,fy:.50}, 'Dasha':      {fx:.10,fy:.36}, 'Osmari':     {fx:.22,fy:.44}, 'Wismarlin':  {fx:.22,fy:.30},
+  'John Thomas': {fx:.10,fy:.18}, 'frank-Isaiah':{fx:.22,fy:.13},'Xavier':     {fx:.10,fy:.07},
+  'Ethan':       {fx:.38,fy:.78}, 'Derek P':    {fx:.50,fy:.85}, 'Hector T':  {fx:.38,fy:.62},
+  'Emily':       {fx:.44,fy:.45}, 'Zoey':       {fx:.56,fy:.50}, 'Eli':        {fx:.44,fy:.30}, 'Hector H':  {fx:.56,fy:.35},
+  'Jazzia':      {fx:.75,fy:.88}, 'Saihana':    {fx:.87,fy:.82}, 'Raynell L': {fx:.88,fy:.70},
+  'Derek':       {fx:.75,fy:.56}, 'Ambar':      {fx:.88,fy:.58}, 'Sophia U':  {fx:.76,fy:.42}, 'Mike':       {fx:.88,fy:.44},
+  'Aris':        {fx:.76,fy:.27}, 'Logan':      {fx:.88,fy:.28}, 'Joshua':    {fx:.84,fy:.14},
 };
 
 // ── Student data model ──
@@ -1162,19 +1189,22 @@ let DISC_FS_PENDING = null;
 // Edit this via the Seat Editor tab or directly here
 // Each column → clusters → rows of [name|null]
 let SEATING_LAYOUT = [
+  // LEFT col — back-of-room at top, front at bottom
   { pt:0, clusters:[
-    { num:6, rows:[['Andry',null],['Samuel','Dashaun']] },
-    { num:7, rows:[['Sarah','Dasha'],['Osmari','Wismarlin']] },
     { num:null, rows:[[null,'John Thomas'],['frank-Isaiah','Xavier']] },
+    { num:7,    rows:[['Osmari','Wismarlin'],['Sarah','Dasha']] },
+    { num:6,    rows:[['Samuel','Dashaun'],['Andry',null]] },
   ]},
-  { pt:52, clusters:[
-    { num:5, rows:[['Ethan','Derek P'],['Hector T',null]] },
-    { num:4, rows:[['Emily','Zoey'],['Eli','Hector H']] },
-  ]},
+  // CENTER col — back-of-room at top, front at bottom
   { pt:0, clusters:[
-    { num:1, rows:[[null,'Jazzia'],['Saihana','Raynell L']] },
-    { num:2, rows:[['Derek','Ambar'],['Sophia U','Mike']] },
-    { num:3, rows:[['Aris','Logan'],[null,'Joshua']] },
+    { num:4, rows:[['Eli','Hector H'],['Emily','Zoey']] },
+    { num:5, rows:[['Hector T',null],['Ethan','Derek P']] },
+  ]},
+  // RIGHT col — back-of-room at top, front at bottom
+  { pt:0, clusters:[
+    { num:3, rows:[[null,'Joshua'],['Aris','Logan']] },
+    { num:2, rows:[['Sophia U','Mike'],['Derek','Ambar']] },
+    { num:1, rows:[['Saihana','Raynell L'],[null,'Jazzia']] },
   ]},
 ];
 
@@ -1184,21 +1214,27 @@ function computeLayoutFlat(){
   // Start from known seed coords, then overlay with computed grid positions
   SEATING_LAYOUT_FLAT = Object.assign({}, DISC_POSITIONS_SEED);
   const cols = SEATING_LAYOUT.length;
+  // Count total cluster rows per column to know total height
   SEATING_LAYOUT.forEach((col, ci) => {
     const fx_base = 0.12 + ci * (0.76 / Math.max(cols - 1, 1));
-    let fy = 0.08 + (col.pt || 0) / 700;
+    // Count total rows in this column to normalize fy
+    let totalRows = 0;
+    col.clusters.forEach(cl => { totalRows += cl.rows.length + 1; }); // +1 for cluster gap
+    let rowIdx = 0;
     col.clusters.forEach(cl => {
-      fy += 0.04;
+      rowIdx++; // cluster badge row
       cl.rows.forEach(row => {
         row.forEach((name, ri) => {
           if(!name) return;
           const offset = (ri === 0 ? -0.09 : 0.09);
+          // fy: 0=top(back of room), 1=bottom(front) — rowIdx/totalRows gives top→bottom
+          const fy_raw = rowIdx / Math.max(totalRows, 1);
           SEATING_LAYOUT_FLAT[name] = {
             fx: Math.max(.05, Math.min(.95, fx_base + offset)),
-            fy: Math.max(.06, Math.min(.93, fy))
+            fy: Math.max(.06, Math.min(.93, fy_raw))
           };
         });
-        fy += 0.13;
+        rowIdx++;
       });
     });
   });
@@ -1331,7 +1367,7 @@ function buildAllDesks(){
     const colHTML = col.clusters.map(cl => {
       const badge = cl.num ? `<div class="cluster-badge">${cl.num}</div>` : `<div style="height:18px;"></div>`;
       const pairsHTML = cl.rows.map(row =>
-        `<div class="desk-pair">${row.map(n => n ? deskSlotHTML(n) : emptyDesk()).join('')}</div>`
+        `<div class="desk-pair">${row.map((n,i) => n ? deskSlotHTML(n, i) : emptyDesk()).join('')}</div>`
       ).join('');
       return `<div class="cluster">${badge}${pairsHTML}</div>`;
     }).join('');
@@ -1344,12 +1380,15 @@ function buildAllDesks(){
 // ── Helpers ──────────────────────────────────────────────────────
 function sid(name){ return name.replace(/[\s']/g,'_'); }
 function emptyDesk(h){ return `<div class="desk empty" style="min-height:${h||80}px;"></div>`; }
-function deskSlotHTML(name){ return `<div id="dk-${sid(name)}" data-name="${name}"></div>`; }
+// pos: 0=left, 1=right within a pair
+function deskSlotHTML(name, pos){ return `<div id="dk-${sid(name)}" data-name="${name}" data-pos="${pos||0}"></div>`; }
 
 function buildDesk(name){
   const slot = document.getElementById('dk-'+sid(name));
   if(!slot) return;
-  slot.className = 'desk ht-none';
+  const pos = parseInt(slot.getAttribute('data-pos') || '0');
+  const sideClass = pos === 0 ? 'desk-left' : 'desk-right';
+  slot.className = `desk ht-none ${sideClass}`;
   slot.setAttribute('data-name', name);
   slot.innerHTML = `
     <div class="desk-top">
@@ -1437,12 +1476,14 @@ function rerenderDesk(name){
     val = avg.reduce((a,b)=>a+b,0) / avg.filter(v=>v>0).length || 0;
   }
 
-  slot.className = slot.className.replace(/\bht-\w+/g,'').trim();
-  if     (val===0)      slot.classList.add('ht-none');
-  else if(val<=2)       slot.classList.add('ht-low');
-  else if(val<=5)       slot.classList.add('ht-mid');
-  else if(val<=8)       slot.classList.add('ht-high');
-  else                  slot.classList.add('ht-great');
+  const sideClass = slot.classList.contains('desk-left') ? 'desk-left'
+                  : slot.classList.contains('desk-right') ? 'desk-right' : 'desk-left';
+  slot.className = `desk ${sideClass}`;
+  if     (val===0)  slot.classList.add('ht-none');
+  else if(val<=2)   slot.classList.add('ht-low');
+  else if(val<=5)   slot.classList.add('ht-mid');
+  else if(val<=8)   slot.classList.add('ht-high');
+  else              slot.classList.add('ht-great');
 
   const hDot = document.getElementById('dh-'+sid(name));
   if(hDot){
@@ -1645,9 +1686,10 @@ function buildDiscSidebarGrid(){
       cl.rows.forEach(row => {
         const pair = document.createElement('div');
         pair.className = 'disc-grid-pair';
-        row.forEach(name => {
+        row.forEach((name, ri) => {
           const cell = document.createElement('div');
-          cell.className = name ? 'disc-grid-cell' : 'disc-grid-cell dg-empty';
+          const sideClass = ri === 0 ? 'dg-left' : 'dg-right';
+          cell.className = name ? `disc-grid-cell ${sideClass}` : 'disc-grid-cell dg-empty';
           if(name){
             cell.id = 'dgc-' + sid(name);
             cell.innerHTML = `<div class="dgc-name">${name}</div><div class="dgc-count" id="dgc-cnt-${sid(name)}">0</div><div class="dgc-part" id="dgc-part-${sid(name)}"></div>`;
@@ -2210,8 +2252,46 @@ async function pushAllToSheets(){
     await pushToSheet(r.name);
     await new Promise(res=>setTimeout(res,80));
   }
+  // Also push seating layout
+  await pushSeatingLayout();
   hideOverlay();
-  toast('✓ All data pushed to Sheets');
+  toast('✓ All data + seating pushed to Sheets');
+}
+
+// Push seating layout JSON to a named cell in the Seating Chart tab
+async function pushSeatingLayout(){
+  if(!SCRIPT_URL) return;
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'save_seating',
+        layout: JSON.stringify(SEATING_LAYOUT)
+      })
+    });
+  }catch(e){}
+}
+
+// Pull seating layout from Sheets and rebuild
+async function pullSeatingLayout(){
+  if(!SCRIPT_URL){ toast('Configure Script URL first'); return; }
+  try{
+    const url = SCRIPT_URL.replace('/exec','') + '/exec?action=get_seating';
+    const r = await fetch(url, {cache:'no-cache'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    if(data.layout){
+      SEATING_LAYOUT = JSON.parse(data.layout);
+      computeLayoutFlat();
+      localStorage.setItem('drexel_seats', JSON.stringify(SEATING_LAYOUT));
+      buildAllDesks(); rerenderDesks();
+      if(Object.keys(discSeatEls).length) buildDiscSeats();
+      toast('✓ Seating layout pulled from Sheets');
+    }
+  }catch(e){
+    toast('⚠ Could not pull seating layout');
+  }
 }
 
 function fuzzyMatch(raw){
