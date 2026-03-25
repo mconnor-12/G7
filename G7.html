@@ -676,7 +676,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
         <div style="height:18px;"></div>
         <div class="desk-pair">
           <div id="dk-empty-bl" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-John Thomas"></div>
+          <div id="dk-John_Thomas"></div>
         </div>
         <div class="desk-pair">
           <div id="dk-frank-Isaiah"></div>
@@ -693,10 +693,10 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
         <div class="cluster-badge">5</div>
         <div class="desk-pair">
           <div id="dk-Ethan"></div>
-          <div id="dk-Derek P"></div>
+          <div id="dk-Derek_P"></div>
         </div>
         <div class="desk-pair">
-          <div id="dk-Hector T"></div>
+          <div id="dk-Hector_T"></div>
           <div id="dk-empty-5b" class="desk empty" style="min-height:80px;"></div>
         </div>
       </div>
@@ -709,7 +709,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
         </div>
         <div class="desk-pair">
           <div id="dk-Eli"></div>
-          <div id="dk-Hector H"></div>
+          <div id="dk-Hector_H"></div>
         </div>
       </div>
 
@@ -726,7 +726,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
         </div>
         <div class="desk-pair">
           <div id="dk-Saihana"></div>
-          <div id="dk-Raynell L"></div>
+          <div id="dk-Raynell_L"></div>
         </div>
       </div>
 
@@ -737,7 +737,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
           <div id="dk-Ambar"></div>
         </div>
         <div class="desk-pair">
-          <div id="dk-Sophia U"></div>
+          <div id="dk-Sophia_U"></div>
           <div id="dk-Mike"></div>
         </div>
       </div>
@@ -1171,6 +1171,9 @@ function saveScriptUrl(){
   toast('✓ Script URL saved — push is live!');
 }
 
+// ── Safe ID helper — replaces spaces/apostrophes with underscores ──
+function sid(name){ return name.replace(/[\s']/g,'_'); }
+
 // ═══════════════════════════════════════════════════════════════════
 // BUILD DESK CARDS
 // ═══════════════════════════════════════════════════════════════════
@@ -1179,16 +1182,16 @@ function buildAllDesks(){
 }
 
 function buildDesk(name){
-  const slot = document.getElementById('dk-'+name);
+  const slot = document.getElementById('dk-'+sid(name));
   if(!slot) return;
   slot.className = 'desk ht-none';
   slot.setAttribute('data-name', name);
   slot.innerHTML = `
     <div class="desk-top">
       <div class="desk-name">${name}</div>
-      <div class="desk-heat" id="dh-${name}"></div>
+      <div class="desk-heat" id="dh-${sid(name)}"></div>
     </div>
-    <div class="desk-metrics" id="dm-${name}"></div>
+    <div class="desk-metrics" id="dm-${sid(name)}"></div>
     <div class="desk-buttons">
       <button class="db db-coin"  onclick="event.stopPropagation();log1('${name}','coins',1)"     title="Dragon Dollar +1">🐉$</button>
       <button class="db db-part"  onclick="event.stopPropagation();log1('${name}','participation',1)" title="Participation +1">Part+</button>
@@ -1243,7 +1246,7 @@ function rerenderDesks(){
 }
 
 function rerenderDesk(name){
-  const slot = document.getElementById('dk-'+name);
+  const slot = document.getElementById('dk-'+sid(name));
   const s    = SD[name];
   if(!slot||!s) return;
 
@@ -1254,14 +1257,12 @@ function rerenderDesk(name){
   else if(metric==='effort')        val = s.effort;
   else if(metric==='discussion')    val = s.discussion;
   else if(metric==='mastery'){
-    // proficient=3,approaching=2,emerging=1
     const lm = s.mastery;
     const mv = m => m==='proficient'?3:m==='approaching'?2:m==='emerging'?1:0;
     const avg = [lm.lap1,lm.lap2,lm.lap3].map(mv);
     val = avg.reduce((a,b)=>a+b,0) / avg.filter(v=>v>0).length || 0;
   }
 
-  // Heat class
   slot.className = slot.className.replace(/\bht-\w+/g,'').trim();
   if     (val===0)      slot.classList.add('ht-none');
   else if(val<=2)       slot.classList.add('ht-low');
@@ -1269,16 +1270,14 @@ function rerenderDesk(name){
   else if(val<=8)       slot.classList.add('ht-high');
   else                  slot.classList.add('ht-great');
 
-  // Heat dot color
-  const hDot = document.getElementById('dh-'+name);
+  const hDot = document.getElementById('dh-'+sid(name));
   if(hDot){
     const colors=['#3a4258','#1f6e46','#7a5308','#a02010','#2ecc8a'];
     const idx = val===0?0:val<=2?1:val<=5?2:val<=8?3:4;
     hDot.style.background = colors[idx];
   }
 
-  // Metric badges
-  const dmEl = document.getElementById('dm-'+name);
+  const dmEl = document.getElementById('dm-'+sid(name));
   if(!dmEl) return;
   let badges = '';
   if(s.coins)         badges+=`<span class="dm dm-gold">🐉${s.coins}</span>`;
@@ -1446,8 +1445,8 @@ function buildSeatSet(wrapId, elMap, clickFn){
   ROSTER.forEach(r => {
     const div = document.createElement('div');
     div.className = 'disc-seat';
-    div.id = wrapId + '-' + r.name;
-    div.innerHTML = `<div class="ds-name">${r.name}</div><div class="ds-count" id="${wrapId}-cnt-${r.name}">0</div><div class="ds-tag">turns</div>`;
+    div.id = wrapId + '-' + sid(r.name);
+    div.innerHTML = `<div class="ds-name">${r.name}</div><div class="ds-count" id="${wrapId}-cnt-${sid(r.name)}">0</div><div class="ds-tag">turns</div>`;
     div.addEventListener('click', () => clickFn(r.name));
     wrap.appendChild(div);
     elMap[r.name] = div;
@@ -1729,10 +1728,8 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
   // Update turn counters + glow on seats
   ROSTER.forEach(r => {
     const cnt = DISC_LINES.filter(l => l.from === r.name).length;
-    // Tab canvas counters
-    const cntEl = document.getElementById(wrapId + '-cnt-' + r.name);
+    const cntEl = document.getElementById(wrapId + '-cnt-' + sid(r.name));
     if(cntEl) cntEl.textContent = cnt;
-    // Seat border glow
     const el = seatEls[r.name];
     if(el){
       el.style.borderColor = cnt > 4 ? 'var(--gold2)' : cnt > 1 ? 'var(--teal)' : '';
