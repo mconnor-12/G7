@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -600,6 +600,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
       <span id="syncLabel">Pull Sheets</span>
     </div>
     <button class="btn btn-b" onclick="pushAllToSheets()">↑ Push All</button>
+    <button class="btn" onclick="toggleScriptSetup()" title="Configure Apps Script URL" id="scriptConfigBtn">⚙ Script URL</button>
     <button class="btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1YwaaYZkXZENl-fvrsC57gU10NW_b1O5gu340FJ6pL_I/edit','_blank')">↗ Sheet</button>
   </div>
 </nav>
@@ -608,11 +609,13 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 <div class="setup-notice" id="setupNotice">
   <div>⚡</div>
   <div style="flex:1;">
-    <b>One-time setup:</b> Paste your Google Apps Script Web App URL to enable live push to Sheets.
+    <b>Apps Script Web App URL</b> — paste the <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px;font-size:10px;">/exec</code> URL to enable live push to Sheets.
     <div style="display:flex;gap:6px;margin-top:6px;">
       <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;">
       <button class="btn btn-teal" onclick="saveScriptUrl()">Save</button>
+      <button class="btn btn-r" onclick="clearScriptUrl()">Clear</button>
     </div>
+    <div id="scriptUrlStatus" style="font-size:9px;margin-top:5px;color:var(--text2);"></div>
   </div>
   <button onclick="document.getElementById('setupNotice').style.display='none'" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:0;">✕</button>
 </div>
@@ -1027,17 +1030,40 @@ let SCRIPT_URL = localStorage.getItem('drexel_script_url') || '';
 // INIT
 // ═══════════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('datePicker').value = TODAY;
-  if(SCRIPT_URL){ document.getElementById('setupNotice').style.display='none'; }
-  loadLocal();
-  loadCheckpoints();
-  buildAllDesks();
-  rerenderDesks();
-  updateStats();
-  buildDiscSeats();
-  const ls = localStorage.getItem('drexel_lastsync');
-  if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets,800); }
-  else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
+  try {
+    document.getElementById('datePicker').value = TODAY;
+
+    // Always pre-fill the input with whatever's saved so user can see/edit it
+    const savedUrl = localStorage.getItem('drexel_script_url') || '';
+    SCRIPT_URL = savedUrl;
+    if(savedUrl) {
+      document.getElementById('scriptUrlInput').value = savedUrl;
+      // Only hide setup bar if URL looks like a real exec URL
+      const isExecUrl = savedUrl.includes('/exec');
+      if(isExecUrl) {
+        document.getElementById('setupNotice').style.display = 'none';
+        updateScriptStatus(true, savedUrl);
+      } else {
+        updateScriptStatus(false, 'URL looks wrong — must end in /exec');
+      }
+    }
+
+    loadLocal();
+    loadCheckpoints();
+    buildAllDesks();
+    rerenderDesks();
+    updateStats();
+    buildDiscSeats();
+
+    const ls = localStorage.getItem('drexel_lastsync');
+    if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets, 1200); }
+    else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
+
+  } catch(err) {
+    console.error('Init error:', err);
+    // Still try to build desks even if something else failed
+    try { buildAllDesks(); rerenderDesks(); } catch(e2) { console.error('buildAllDesks failed:', e2); }
+  }
 });
 
 function loadLocal(){
@@ -1052,10 +1078,55 @@ function saveLocal(){
 }
 
 function saveScriptUrl(){
-  SCRIPT_URL = document.getElementById('scriptUrlInput').value.trim();
+  const raw = document.getElementById('scriptUrlInput').value.trim();
+  if(!raw){ toast('⚠ Paste your /exec URL first'); return; }
+  if(!raw.includes('/exec')){
+    updateScriptStatus(false, '⚠ That looks like a library URL, not a Web App URL. It must end in /exec');
+    toast('⚠ Wrong URL type — need the /exec deployment URL');
+    return;
+  }
+  SCRIPT_URL = raw;
   localStorage.setItem('drexel_script_url', SCRIPT_URL);
-  document.getElementById('setupNotice').style.display='none';
-  toast('✓ Script URL saved — push is live!');
+  document.getElementById('setupNotice').style.display = 'none';
+  updateScriptStatus(true, SCRIPT_URL);
+  const btn = document.getElementById('scriptConfigBtn');
+  if(btn) btn.style.color = 'var(--green2)';
+  toast('✓ Script URL saved — live push enabled!');
+}
+
+function clearScriptUrl(){
+  SCRIPT_URL = '';
+  localStorage.removeItem('drexel_script_url');
+  document.getElementById('scriptUrlInput').value = '';
+  updateScriptStatus(false, 'Cleared — paste new /exec URL above');
+  toast('Script URL cleared');
+}
+
+function toggleScriptSetup(){
+  const notice = document.getElementById('setupNotice');
+  const isHidden = notice.style.display === 'none' || !notice.style.display;
+  notice.style.display = isHidden ? 'flex' : 'none';
+  // Always pre-fill with current value when opening
+  if(isHidden) {
+    document.getElementById('scriptUrlInput').value = SCRIPT_URL || '';
+    notice.style.display = 'flex';
+  }
+}
+
+function updateScriptStatus(ok, url){
+  const el = document.getElementById('scriptUrlStatus');
+  if(!el) return;
+  const btn = document.getElementById('scriptConfigBtn');
+  if(ok){
+    const short = url.length > 60 ? url.slice(0,55)+'…' : url;
+    el.textContent = '✓ Connected: ' + short;
+    el.style.color = 'var(--green2)';
+    if(btn){ btn.textContent = '✓ Script URL'; btn.style.color='var(--green2)'; }
+  } else {
+    el.textContent = url || 'Not configured';
+    el.style.color = 'var(--red2)';
+    if(btn){ btn.textContent = '⚠ Script URL'; btn.style.color='var(--amber2)'; }
+  }
 }
 
 // ── Safe ID helper — replaces spaces/apostrophes with underscores ──
