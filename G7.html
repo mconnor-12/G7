@@ -46,6 +46,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ntab.active{color:var(--text);border-bottom-color:var(--gold2);background:var(--bg3);}
 .ntab.disc-tab.active{color:var(--teal2);border-bottom-color:var(--teal);}
 .ntab.pulse-tab.active{color:var(--purple2);border-bottom-color:var(--purple);}
+.ntab.seats-tab.active{color:var(--amber2);border-bottom-color:var(--amber);}
 .nav-right{display:flex;align-items:center;gap:8px;}
 .sync-pill{
   font-size:10px;font-weight:600;font-family:'DM Mono',monospace;
@@ -498,6 +499,85 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 .smg-lap.le{background:var(--red);}
 .smg-lap.ln{background:var(--bg5);color:var(--text3);}
 
+/* ══ QUESTION THREAD TABS ════════════════════════════════════════ */
+.q-tab{
+  font-size:9px;font-weight:700;font-family:'DM Mono',monospace;
+  padding:3px 8px;border-radius:4px;border:1px solid transparent;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.q-tab.active{box-shadow:0 0 0 2px currentColor;font-size:9px;}
+
+/* ══ DISC SEAT GRID (sidebar) ════════════════════════════════════ */
+.disc-cluster-group{margin-bottom:10px;}
+.disc-cluster-num{
+  font-size:8px;font-weight:700;font-family:'DM Mono';
+  color:var(--purple2);background:var(--purplebg);
+  border:1px solid rgba(139,108,247,.2);border-radius:3px;
+  padding:1px 5px;display:inline-block;margin-bottom:4px;
+}
+.disc-grid-pair{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:3px;}
+.disc-grid-cell{
+  border-radius:5px;padding:5px 6px;
+  background:var(--bg3);border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:1px;
+  min-height:38px;
+}
+.disc-grid-cell:hover{border-color:var(--teal);background:var(--bg4);}
+.disc-grid-cell.dg-speaking{border-color:var(--gold2);background:rgba(240,180,41,.1);box-shadow:0 0 8px rgba(255,209,102,.3);}
+.disc-grid-cell.dg-spoke{border-color:var(--teal);}
+.disc-grid-cell.dg-empty{background:var(--bg2);border-style:dashed;cursor:default;}
+.dgc-name{font-size:9px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dgc-count{font-size:11px;font-weight:800;font-family:'Syne',sans-serif;color:var(--teal2);line-height:1;}
+.dgc-part{font-size:7px;font-family:'DM Mono';color:var(--text3);}
+
+/* ══ SEAT EDITOR ════════════════════════════════════════════════ */
+.se-cluster{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  padding:10px;
+}
+.se-cluster-header{
+  display:flex;align-items:center;gap:6px;margin-bottom:8px;
+}
+.se-cluster-num{
+  font-size:10px;font-weight:700;font-family:'DM Mono';
+  color:var(--purple2);background:var(--purplebg);
+  border:1px solid rgba(139,108,247,.2);border-radius:4px;
+  padding:2px 7px;
+}
+.se-cluster-num-input{
+  background:transparent;border:none;border-bottom:1px solid var(--border2);
+  color:var(--purple2);font-size:10px;font-weight:700;font-family:'DM Mono';
+  width:40px;text-align:center;outline:none;
+}
+.se-pair{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;}
+.se-desk{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:5px;
+  padding:5px 7px;min-height:36px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:default;transition:border-color .15s;
+}
+.se-desk.drag-over{border-color:var(--teal);background:rgba(10,184,212,.08);}
+.se-desk-name{font-size:10px;font-weight:600;color:var(--text);flex:1;}
+.se-desk-empty{font-size:10px;color:var(--text3);font-style:italic;}
+.se-desk-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 2px;}
+.se-desk-del:hover{color:var(--red2);}
+.se-name-chip{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:4px;
+  padding:3px 8px;font-size:10px;font-weight:600;color:var(--text);
+  cursor:grab;user-select:none;transition:all .15s;
+}
+.se-name-chip:hover{border-color:var(--border3);background:var(--bg4);}
+.se-name-chip.dragging{opacity:.4;}
+.se-add-desk{
+  grid-column:span 2;
+  background:transparent;border:1px dashed var(--border2);
+  border-radius:5px;padding:4px;
+  font-size:9px;color:var(--text3);cursor:pointer;
+  text-align:center;transition:all .15s;
+}
+.se-add-desk:hover{border-color:var(--teal);color:var(--teal2);}
+
 /* ══ DISC PICKER POPUP ═══════════════════════════════════════════ */
 .disc-picker{
   position:fixed;inset:0;z-index:600;
@@ -592,6 +672,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
       <button class="ntab active" onclick="switchPage('heatmap',this)">🗺 Seating + Live</button>
       <button class="ntab disc-tab" onclick="switchPage('disc',this)">✈ Discussion Map</button>
       <button class="ntab pulse-tab" onclick="switchPage('pulse',this)">📈 Class Pulse</button>
+      <button class="ntab seats-tab" onclick="switchPage('seats',this)">✏️ Edit Seats</button>
     </div>
   </div>
   <div class="nav-right">
@@ -653,40 +734,72 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 
 <!-- ══ PAGE: DISCUSSION MAP ════════════════════════════════════════ -->
 <div class="page" id="page-disc">
+  <!-- toolbar -->
   <div class="disc-toolbar">
-    <span style="font-size:11px;font-weight:600;color:var(--teal2);">✈ Discussion Flight Map</span>
+    <span style="font-size:11px;font-weight:700;color:var(--teal2);letter-spacing:.04em;">✈ DISCUSSION MAP</span>
     <div class="divider"></div>
-    <button class="btn btn-teal" id="discModeBtn" onclick="toggleDiscMode()">▶ Start Discussion</button>
-    <button class="btn" style="background:rgba(139,108,247,.12);border-color:rgba(139,108,247,.3);color:var(--purple2);" onclick="openDiscFullscreen()">⛶ Fullscreen Mode</button>
-    <button class="btn" onclick="clearDiscLines(false)">✕ Clear Lines</button>
-    <select id="discLineType" style="font-size:10px;">
-      <option value="respond">Responds to</option>
-      <option value="build">Builds on</option>
-      <option value="challenge">Challenges</option>
-      <option value="new">New idea</option>
-      <option value="question">Question</option>
+    <!-- Session control -->
+    <button class="btn btn-teal" id="discModeBtn" onclick="toggleDiscMode()">▶ Start Session</button>
+    <button class="btn" style="background:rgba(139,108,247,.12);border-color:rgba(139,108,247,.3);color:var(--purple2);" onclick="openDiscFullscreen()">⛶ Fullscreen</button>
+    <div class="divider"></div>
+    <!-- Question threads -->
+    <span style="font-size:10px;color:var(--text2);">Question:</span>
+    <div id="questionTabs" style="display:flex;gap:3px;align-items:center;"></div>
+    <button class="btn" id="newQuestionBtn" onclick="addQuestion()" style="font-size:10px;padding:3px 9px;">+ New Q</button>
+    <div class="divider"></div>
+    <!-- Contribution type -->
+    <select id="discLineType" style="font-size:10px;" onchange="updateTypeColor()">
+      <option value="respond">↩ Responds to</option>
+      <option value="build">＋ Builds on</option>
+      <option value="challenge">⚡ Challenges</option>
+      <option value="new">★ New idea</option>
+      <option value="question">? Question</option>
     </select>
+    <div id="typeColorSwatch" style="width:10px;height:10px;border-radius:50%;background:var(--teal);flex-shrink:0;"></div>
     <div class="divider"></div>
-    <span style="font-size:10px;color:var(--text2);" id="discStatusLabel">Click a seat to begin a turn</span>
-    <div style="margin-left:auto;display:flex;gap:6px;">
+    <!-- Overlay toggle -->
+    <button class="btn" id="partOverlayBtn" onclick="togglePartOverlay()" title="Show participation heatmap on map">👁 Part. Overlay</button>
+    <button class="btn" onclick="clearDiscLines(false)" style="font-size:10px;">✕ Clear</button>
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+      <span style="font-size:10px;color:var(--text2);" id="discStatusLabel">Press ▶ Start Session</span>
       <button class="btn btn-b" onclick="exportDiscJSON()">↓ Export</button>
     </div>
   </div>
 
-  <div class="disc-canvas-wrap">
-    <canvas id="disc-canvas"></canvas>
-    <div id="disc-seats"></div>
+  <!-- map + grid split view -->
+  <div style="display:flex;height:calc(100vh - 148px);min-height:400px;">
+
+    <!-- Flight map (left, main) -->
+    <div class="disc-canvas-wrap" id="discMapLeft" style="flex:1;position:relative;overflow:hidden;">
+      <canvas id="disc-canvas"></canvas>
+      <div id="disc-seats"></div>
+      <!-- speaking prompt overlay -->
+      <div id="speakPrompt" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+        background:var(--bg2);border:1.5px solid var(--gold2);border-radius:8px;
+        padding:8px 16px;font-size:11px;font-weight:600;color:var(--gold2);
+        display:none;white-space:nowrap;z-index:20;pointer-events:none;">
+      </div>
+    </div>
+
+    <!-- Seat grid sidebar (right, mirrors room layout) -->
+    <div id="discGridSidebar" style="width:240px;flex-shrink:0;background:var(--bg2);
+      border-left:1px solid var(--border2);overflow-y:auto;padding:10px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+        color:var(--text3);margin-bottom:8px;">Classroom Grid</div>
+      <div id="discSeatGrid"></div>
+    </div>
   </div>
 
+  <!-- legend bar -->
   <div class="disc-legend">
-    <b style="font-size:10px;color:var(--text);">Line types:</b>
-    <div class="dleg"><div class="dleg-line" style="background:var(--teal);opacity:.8;"></div><span>Responds to</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--green);border-top:1px dashed var(--green);"></div><span>Builds on</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--amber);"></div><span>Challenges</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--purple);"></div><span>New idea</span></div>
-    <div class="dleg"><div class="dleg-line" style="background:var(--blue);"></div><span>Question</span></div>
-    <div class="dleg"><div style="width:10px;height:10px;border-radius:50%;background:var(--gold2);"></div><span>Speaking</span></div>
-    <div class="dleg"><div style="width:10px;height:10px;border-radius:50%;background:var(--teal);"></div><span>First speaker</span></div>
+    <b style="font-size:10px;color:var(--text);">Lines:</b>
+    <div class="dleg"><div class="dleg-line" style="background:#0ab8d4;"></div><span>Responds to</span></div>
+    <div class="dleg"><div class="dleg-line" style="background:#2ecc8a;border-top:1px dashed #2ecc8a;"></div><span>Builds on</span></div>
+    <div class="dleg"><div class="dleg-line" style="background:#e8930a;"></div><span>Challenges</span></div>
+    <div class="dleg"><div class="dleg-line" style="background:#8b6cf7;"></div><span>New idea</span></div>
+    <div class="dleg"><div class="dleg-line" style="background:#4a8cf5;"></div><span>Question</span></div>
+    <div class="dleg"><div style="width:10px;height:10px;border-radius:2px;background:var(--gold2);opacity:.7;"></div><span>Q thread color</span></div>
+    <span style="margin-left:auto;font-family:'DM Mono';font-size:10px;color:var(--text2);" id="discFsTurnCount">0 turns</span>
   </div>
 </div>
 
@@ -898,6 +1011,30 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
   </div>
 </div>
 
+<!-- ══ PAGE: SEAT EDITOR ══════════════════════════════════════════ -->
+<div class="page" id="page-seats">
+  <div class="pulse-toolbar">
+    <span class="pulse-toolbar-title" style="color:var(--amber2);">✏️ SEATING EDITOR</span>
+    <div class="divider"></div>
+    <span style="font-size:10px;color:var(--text2);">Drag names between desks · Changes apply to Live Tracker + Discussion Map instantly</span>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <button class="btn" onclick="addCluster()">+ Cluster</button>
+      <button class="btn btn-g" onclick="saveSeats()">✓ Save Layout</button>
+      <button class="btn btn-r" onclick="resetSeats()">↺ Reset</button>
+    </div>
+  </div>
+  <div style="padding:16px;">
+    <div id="seatEditorGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;"></div>
+    <!-- Unassigned students pool -->
+    <div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:8px;">
+        Unassigned / Pool
+      </div>
+      <div id="seatPool" style="display:flex;flex-wrap:wrap;gap:6px;min-height:36px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ DISC PICKER POPUP ══════════════════════════════════════════ -->
 <div class="disc-picker" id="discPicker">
   <div class="dp-box">
@@ -990,8 +1127,8 @@ const ROSTER = [
   {name:'Aris',         cluster:3}, {name:'Logan',        cluster:3}, {name:'Joshua',       cluster:3},
 ];
 
-// Discussion seat positions (fraction of canvas width/height)
-const DISC_POSITIONS = {
+// ── Seed flat positions from known coordinates (used before computeLayoutFlat runs) ──
+const DISC_POSITIONS_SEED = {
   'Andry':       {fx:.10,fy:.18}, 'Samuel':     {fx:.10,fy:.32}, 'Dashaun':    {fx:.22,fy:.25},
   'Sarah':       {fx:.10,fy:.50}, 'Dasha':      {fx:.10,fy:.64}, 'Osmari':     {fx:.22,fy:.56}, 'Wismarlin':  {fx:.22,fy:.70},
   'John Thomas': {fx:.10,fy:.82}, 'frank-Isaiah':{fx:.22,fy:.87},'Xavier':     {fx:.10,fy:.93},
@@ -1014,10 +1151,59 @@ ROSTER.forEach(r => {
 });
 
 // ── Discussion state ──
-let DISC_LINES   = [];   // [{from, to, type, ts}]
+let DISC_LINES   = [];
 let DISC_ACTIVE  = false;
-let DISC_PENDING = null; // first seat clicked
+let DISC_PENDING = null;
 let DISC_TURN    = 0;
+let DISC_FS_ACTIVE  = false;
+let DISC_FS_PENDING = null;
+
+// ── Seating layout — SINGLE SOURCE OF TRUTH for both heatmap + disc map ──
+// Edit this via the Seat Editor tab or directly here
+// Each column → clusters → rows of [name|null]
+let SEATING_LAYOUT = [
+  { pt:0, clusters:[
+    { num:6, rows:[['Andry',null],['Samuel','Dashaun']] },
+    { num:7, rows:[['Sarah','Dasha'],['Osmari','Wismarlin']] },
+    { num:null, rows:[[null,'John Thomas'],['frank-Isaiah','Xavier']] },
+  ]},
+  { pt:52, clusters:[
+    { num:5, rows:[['Ethan','Derek P'],['Hector T',null]] },
+    { num:4, rows:[['Emily','Zoey'],['Eli','Hector H']] },
+  ]},
+  { pt:0, clusters:[
+    { num:1, rows:[[null,'Jazzia'],['Saihana','Raynell L']] },
+    { num:2, rows:[['Derek','Ambar'],['Sophia U','Mike']] },
+    { num:3, rows:[['Aris','Logan'],[null,'Joshua']] },
+  ]},
+];
+
+// Flat map: name → {fx, fy} fractional positions for canvas drawing
+let SEATING_LAYOUT_FLAT = Object.assign({}, DISC_POSITIONS_SEED); // seed with known coords
+function computeLayoutFlat(){
+  // Start from known seed coords, then overlay with computed grid positions
+  SEATING_LAYOUT_FLAT = Object.assign({}, DISC_POSITIONS_SEED);
+  const cols = SEATING_LAYOUT.length;
+  SEATING_LAYOUT.forEach((col, ci) => {
+    const fx_base = 0.12 + ci * (0.76 / Math.max(cols - 1, 1));
+    let fy = 0.08 + (col.pt || 0) / 700;
+    col.clusters.forEach(cl => {
+      fy += 0.04;
+      cl.rows.forEach(row => {
+        row.forEach((name, ri) => {
+          if(!name) return;
+          const offset = (ri === 0 ? -0.09 : 0.09);
+          SEATING_LAYOUT_FLAT[name] = {
+            fx: Math.max(.05, Math.min(.95, fx_base + offset)),
+            fy: Math.max(.06, Math.min(.93, fy))
+          };
+        });
+        fy += 0.13;
+      });
+    });
+  });
+}
+computeLayoutFlat();
 
 // ── Panel state ──
 let PANEL_STUDENT = null;
@@ -1070,11 +1256,16 @@ function loadLocal(){
   const saved = localStorage.getItem('drexel_sd');
   if(saved){ try{ const p=JSON.parse(saved); ROSTER.forEach(r=>{ if(p[r.name]) Object.assign(SD[r.name],p[r.name]); }); }catch(e){} }
   const dl = localStorage.getItem('drexel_disclines');
-  if(dl){ try{ DISC_LINES=JSON.parse(dl); }catch(e){} }
+  if(dl){ try{ DISC_LINES=JSON.parse(dl); DISC_TURN=DISC_LINES.length; }catch(e){} }
+  const dq = localStorage.getItem('drexel_questions');
+  if(dq){ try{ QUESTIONS=JSON.parse(dq); }catch(e){} }
+  const ds = localStorage.getItem('drexel_seats');
+  if(ds){ try{ SEATING_LAYOUT=JSON.parse(ds); computeLayoutFlat(); }catch(e){} }
 }
 function saveLocal(){
   localStorage.setItem('drexel_sd', JSON.stringify(SD));
   localStorage.setItem('drexel_disclines', JSON.stringify(DISC_LINES));
+  localStorage.setItem('drexel_questions', JSON.stringify(QUESTIONS));
 }
 
 function saveScriptUrl(){
@@ -1129,48 +1320,14 @@ function updateScriptStatus(ok, url){
   }
 }
 
-// ── Safe ID helper — replaces spaces/apostrophes with underscores ──
-function sid(name){ return name.replace(/[\s']/g,'_'); }
-
-// ── Empty desk placeholder ──
-function emptyDesk(h){ return `<div class="desk empty" style="min-height:${h||80}px;"></div>`; }
-
-// ── Build a single named desk slot div ──
-function deskSlotHTML(name){
-  return `<div id="dk-${sid(name)}" data-name="${name}"></div>`;
-}
-
 // ═══════════════════════════════════════════════════════════════════
-// BUILD ENTIRE SEATING GRID FROM JS — immune to HTML caching issues
+// BUILD ENTIRE SEATING GRID FROM JS
 // ═══════════════════════════════════════════════════════════════════
 function buildAllDesks(){
   const grid = document.getElementById('seatingGrid');
   if(!grid) return;
 
-  // Layout mirrors the physical room exactly
-  // Each column is an array of clusters; each cluster has rows of [name|null]
-  // null = empty desk placeholder
-  const LAYOUT = [
-    // ── LEFT COLUMN ──
-    { pt: 0, clusters: [
-      { num: 6, rows: [['Andry', null], ['Samuel','Dashaun']] },
-      { num: 7, rows: [['Sarah','Dasha'], ['Osmari','Wismarlin']] },
-      { num: null, rows: [[null,'John Thomas'], ['frank-Isaiah','Xavier']] },
-    ]},
-    // ── CENTER COLUMN ──
-    { pt: 52, clusters: [
-      { num: 5, rows: [['Ethan','Derek P'], ['Hector T', null]] },
-      { num: 4, rows: [['Emily','Zoey'], ['Eli','Hector H']] },
-    ]},
-    // ── RIGHT COLUMN ──
-    { pt: 0, clusters: [
-      { num: 1, rows: [[null,'Jazzia'], ['Saihana','Raynell L']] },
-      { num: 2, rows: [['Derek','Ambar'], ['Sophia U','Mike']] },
-      { num: 3, rows: [['Aris','Logan'], [null,'Joshua']] },
-    ]},
-  ];
-
-  grid.innerHTML = LAYOUT.map(col => {
+  grid.innerHTML = SEATING_LAYOUT.map(col => {
     const colHTML = col.clusters.map(cl => {
       const badge = cl.num ? `<div class="cluster-badge">${cl.num}</div>` : `<div style="height:18px;"></div>`;
       const pairsHTML = cl.rows.map(row =>
@@ -1181,9 +1338,13 @@ function buildAllDesks(){
     return `<div style="display:flex;flex-direction:column;gap:18px;${col.pt?'padding-top:'+col.pt+'px;':''}">${colHTML}</div>`;
   }).join('');
 
-  // Now inject the desk card content into every slot
   ROSTER.forEach(r => buildDesk(r.name));
 }
+
+// ── Helpers ──────────────────────────────────────────────────────
+function sid(name){ return name.replace(/[\s']/g,'_'); }
+function emptyDesk(h){ return `<div class="desk empty" style="min-height:${h||80}px;"></div>`; }
+function deskSlotHTML(name){ return `<div id="dk-${sid(name)}" data-name="${name}"></div>`; }
 
 function buildDesk(name){
   const slot = document.getElementById('dk-'+sid(name));
@@ -1200,7 +1361,7 @@ function buildDesk(name){
       <button class="db db-coin"  onclick="event.stopPropagation();log1('${name}','coins',1)"     title="Dragon Dollar +1">🐉$</button>
       <button class="db db-part"  onclick="event.stopPropagation();log1('${name}','participation',1)" title="Participation +1">Part+</button>
       <button class="db db-effort"onclick="event.stopPropagation();log1('${name}','effort',1)"    title="Effort +1">Eff+</button>
-      <button class="db db-disc"  onclick="event.stopPropagation();openDiscPicker('${name}')" title="Log discussion turn">Disc+</button>
+      <button class="db db-disc"  onclick="event.stopPropagation();quickDiscFromDesk('${name}')" title="Log discussion turn">Disc+</button>
       <button class="db db-prof"  onclick="event.stopPropagation();quickMastery('${name}','proficient')" title="Proficient">✓P</button>
       <button class="db db-appr"  onclick="event.stopPropagation();quickMastery('${name}','approaching')" title="Approaching">~A</button>
       <button class="db db-emer"  onclick="event.stopPropagation();quickMastery('${name}','emerging')"  title="Emerging">▲E</button>
@@ -1229,8 +1390,17 @@ function log1(name, field, delta){
   pushToSheet(name);
 }
 
+// Disc+ button on desk card: if session active, auto-advance; otherwise just log count
+function quickDiscFromDesk(name){
+  if(DISC_ACTIVE){
+    discSeatClick(name);
+  } else {
+    log1(name, 'discussion', 1);
+    toast(`${name} · Disc → ${SD[name].discussion} (start session on Map tab to track threads)`);
+  }
+}
+
 function quickMastery(name, level){
-  SD[name].mastery[`lap${ACTIVE_LAP}`] = level;
   const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   SD[name].log.unshift(`${ts} — LAP${ACTIVE_LAP} → ${level}`);
   saveLocal();
@@ -1408,18 +1578,21 @@ function clearMastery(name, lapNum){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// DISCUSSION MAP — shared state
+// DISCUSSION MAP — redesigned
+// Single-click auto-advance · Question threads · Part overlay · Grid sidebar
 // ═══════════════════════════════════════════════════════════════════
+
 let discCanvasEl, discCtx, discSeatEls = {};
 let discFsCanvasEl, discFsCtx, discFsSeatEls = {};
 
-// Picker state
-let PICKER_SPEAKER   = null;
-let PICKER_TYPE      = 'respond';
+// Question thread system
+let QUESTIONS = [{id:0, label:'Q1', color:'#0ab8d4'}];
+let ACTIVE_Q  = 0;
+const Q_PALETTE = ['#0ab8d4','#2ecc8a','#f0b429','#f04a5a','#8b6cf7','#e040a8','#4a8cf5','#e8930a'];
 
-// Fullscreen mode state
-let DISC_FS_ACTIVE  = false;
-let DISC_FS_PENDING = null;
+// Session state
+let DISC_LAST_SPEAKER = null; // for auto-advance
+let SHOW_PART_OVERLAY = false;
 
 const TYPE_COLORS = {
   respond:  '#0ab8d4',
@@ -1428,6 +1601,474 @@ const TYPE_COLORS = {
   new:      '#8b6cf7',
   question: '#4a8cf5',
 };
+
+// ── Init ──────────────────────────────────────────────────────────
+function buildDiscSeats(){
+  discCanvasEl = document.getElementById('disc-canvas');
+  discCtx      = discCanvasEl.getContext('2d');
+  buildSeatSet('disc-seats', discSeatEls, discSeatClick);
+  buildDiscSidebarGrid();
+  renderQuestionTabs();
+  positionDiscSeats();
+  window.addEventListener('resize', () => { positionDiscSeats(); drawDiscLines(); });
+  drawDiscLines();
+}
+
+function buildSeatSet(wrapId, elMap, clickFn){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  ROSTER.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'disc-seat';
+    div.id = wrapId + '-' + sid(r.name);
+    div.innerHTML = `
+      <div class="ds-name">${r.name}</div>
+      <div class="ds-count" id="${wrapId}-cnt-${sid(r.name)}">0</div>
+      <div class="ds-tag">turns</div>`;
+    div.addEventListener('click', () => clickFn(r.name));
+    wrap.appendChild(div);
+    elMap[r.name] = div;
+  });
+}
+
+// ── Sidebar grid — mirrors room layout ───────────────────────────
+function buildDiscSidebarGrid(){
+  const wrap = document.getElementById('discSeatGrid');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  SEATING_LAYOUT.forEach(col => {
+    col.clusters.forEach(cl => {
+      const grp = document.createElement('div');
+      grp.className = 'disc-cluster-group';
+      grp.innerHTML = `<div class="disc-cluster-num">${cl.num || '—'}</div>`;
+      cl.rows.forEach(row => {
+        const pair = document.createElement('div');
+        pair.className = 'disc-grid-pair';
+        row.forEach(name => {
+          const cell = document.createElement('div');
+          cell.className = name ? 'disc-grid-cell' : 'disc-grid-cell dg-empty';
+          if(name){
+            cell.id = 'dgc-' + sid(name);
+            cell.innerHTML = `<div class="dgc-name">${name}</div><div class="dgc-count" id="dgc-cnt-${sid(name)}">0</div><div class="dgc-part" id="dgc-part-${sid(name)}"></div>`;
+            cell.addEventListener('click', () => discSeatClick(name));
+          }
+          pair.appendChild(cell);
+        });
+        grp.appendChild(pair);
+      });
+      wrap.appendChild(grp);
+    });
+  });
+}
+
+// ── Position map seats ────────────────────────────────────────────
+function positionDiscSeats(){
+  positionSeatSet('disc-seats', discSeatEls);
+}
+function positionFsSeats(){
+  positionSeatSet('discFsSeats', discFsSeatEls);
+}
+function positionSeatSet(wrapId, elMap){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
+  ROSTER.forEach(r => {
+    const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
+    const el  = elMap[r.name];
+    if(!el) return;
+    el.style.left = (pos.fx * W - 36) + 'px';
+    el.style.top  = (pos.fy * H - 28) + 'px';
+  });
+}
+
+// ── Question thread system ─────────────────────────────────────────
+function renderQuestionTabs(){
+  const wrap = document.getElementById('questionTabs');
+  if(!wrap) return;
+  wrap.innerHTML = QUESTIONS.map(q => {
+    const count = DISC_LINES.filter(l => l.qid === q.id).length;
+    return `<div class="q-tab ${q.id===ACTIVE_Q?'active':''}"
+      style="background:${q.id===ACTIVE_Q?q.color+'22':'var(--bg3)'};color:${q.color};border-color:${q.id===ACTIVE_Q?q.color:'var(--border2)'};"
+      onclick="setActiveQuestion(${q.id})"
+      title="${count} turns in this thread">
+      ${q.label} <span style="opacity:.6;font-size:8px;">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function addQuestion(){
+  const n = QUESTIONS.length;
+  const id = Date.now();
+  const label = 'Q' + (n + 1);
+  const color = Q_PALETTE[n % Q_PALETTE.length];
+  QUESTIONS.push({id, label, color});
+  ACTIVE_Q = id;
+  renderQuestionTabs();
+  updateTypeColor();
+  toast(`New thread: ${label}`);
+}
+
+function setActiveQuestion(id){
+  ACTIVE_Q = id;
+  renderQuestionTabs();
+  updateTypeColor();
+  drawDiscLines();
+}
+
+function updateTypeColor(){
+  const q = QUESTIONS.find(q=>q.id===ACTIVE_Q) || QUESTIONS[0];
+  const swatch = document.getElementById('typeColorSwatch');
+  if(swatch) swatch.style.background = q.color;
+}
+
+// ── Participation overlay ─────────────────────────────────────────
+function togglePartOverlay(){
+  SHOW_PART_OVERLAY = !SHOW_PART_OVERLAY;
+  const btn = document.getElementById('partOverlayBtn');
+  if(btn){
+    btn.style.background = SHOW_PART_OVERLAY ? 'rgba(74,140,245,.2)' : '';
+    btn.style.borderColor = SHOW_PART_OVERLAY ? 'var(--blue2)' : '';
+    btn.style.color = SHOW_PART_OVERLAY ? 'var(--blue2)' : '';
+  }
+  drawDiscLines();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SINGLE-CLICK AUTO-ADVANCE — the core of the new flow
+// Click once = mark as speaker. Fires next-speaker prompt.
+// If last_speaker exists, auto-commits a turn from last→new.
+// ═══════════════════════════════════════════════════════════════════
+function discSeatClick(name){
+  if(!DISC_ACTIVE){
+    toast('Press ▶ Start Session first');
+    return;
+  }
+
+  const type = document.getElementById('discLineType')?.value || 'respond';
+
+  if(DISC_LAST_SPEAKER === null){
+    // First speaker of the session
+    DISC_LAST_SPEAKER = name;
+    highlightSpeaker(name, true);
+    setStatusLabel(`"${name}" speaking — click next speaker or change type`);
+    log1(name, 'discussion', 1);
+    // Log as standalone turn
+    DISC_LINES.push({from: name, to: name, type: 'new', qid: ACTIVE_Q, ts: Date.now(), turn: DISC_TURN++});
+    saveLocal(); drawDiscLines(); updateDiscSidebar(); updateStats(); updateDiscTurnCounter();
+    renderQuestionTabs();
+    return;
+  }
+
+  const from = DISC_LAST_SPEAKER;
+  const to   = name;
+
+  // Clear old speaker highlight
+  highlightSpeaker(from, false);
+
+  // If clicking same person again — counts as new idea, resets
+  if(from === name){
+    DISC_LAST_SPEAKER = null;
+    setStatusLabel('Thread reset — click next first speaker');
+    toast(`${name} — new thread`);
+    return;
+  }
+
+  // Commit the turn from→to
+  DISC_LAST_SPEAKER = name;
+  highlightSpeaker(name, true);
+
+  DISC_LINES.push({from, to, type, qid: ACTIVE_Q, ts: Date.now(), turn: DISC_TURN++});
+  log1(name, 'discussion', 1);
+  saveLocal();
+  drawDiscLines();
+  updateDiscSidebar();
+  updateStats();
+  updateDiscTurnCounter();
+  renderQuestionTabs();
+
+  if(SCRIPT_URL){
+    pushDiscLineToSheet({from, to, type, turn: DISC_TURN-1, date: TODAY, qid: ACTIVE_Q});
+  }
+
+  const typeLabel = {respond:'→',build:'＋→',challenge:'⚡→',new:'★',question:'?→'}[type]||'→';
+  setStatusLabel(`${from} ${typeLabel} ${to} · Click next speaker`);
+  toast(`${from} → ${to}`);
+}
+
+function highlightSpeaker(name, on){
+  // Map seat
+  const el = discSeatEls[name];
+  if(el){
+    el.classList.toggle('speaking', on);
+    if(on && DISC_TURN === 0) el.classList.add('first-speaker');
+  }
+  // Grid cell
+  const cell = document.getElementById('dgc-' + sid(name));
+  if(cell) cell.classList.toggle('dg-speaking', on);
+}
+
+function setStatusLabel(msg){
+  const el = document.getElementById('discStatusLabel');
+  if(el) el.textContent = msg;
+  const sp = document.getElementById('speakPrompt');
+  if(sp){ sp.textContent = msg; sp.style.display = DISC_ACTIVE ? 'block' : 'none'; }
+}
+
+// ── Update sidebar grid counts ──────────────────────────────────
+function updateDiscSidebar(){
+  ROSTER.forEach(r => {
+    const cnt  = DISC_LINES.filter(l => l.from === r.name).length;
+    const part = SD[r.name]?.participation || 0;
+    const cntEl  = document.getElementById('dgc-cnt-' + sid(r.name));
+    const partEl = document.getElementById('dgc-part-' + sid(r.name));
+    const cell   = document.getElementById('dgc-' + sid(r.name));
+    if(cntEl) cntEl.textContent = cnt;
+    if(partEl) partEl.textContent = part ? 'P:'+part : '';
+    if(cell && cnt > 0) cell.classList.add('dg-spoke');
+    if(cell){
+      cell.style.borderColor = cnt > 4 ? 'var(--gold2)' : cnt > 1 ? 'var(--teal)' : '';
+    }
+  });
+}
+
+function toggleDiscMode(){
+  DISC_ACTIVE = !DISC_ACTIVE;
+  const btn = document.getElementById('discModeBtn');
+  btn.textContent = DISC_ACTIVE ? '⏹ Stop Session' : '▶ Start Session';
+  btn.className   = DISC_ACTIVE ? 'btn btn-r' : 'btn btn-teal';
+  if(!DISC_ACTIVE){
+    if(DISC_LAST_SPEAKER){ highlightSpeaker(DISC_LAST_SPEAKER, false); }
+    DISC_LAST_SPEAKER = null;
+  }
+  setStatusLabel(DISC_ACTIVE ? 'Click first speaker' : 'Press ▶ Start Session');
+  const sp = document.getElementById('speakPrompt');
+  if(sp) sp.style.display = DISC_ACTIVE ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FULLSCREEN DISCUSSION MODE
+// ═══════════════════════════════════════════════════════════════════
+function openDiscFullscreen(){
+  const fs = document.getElementById('discFullscreen');
+  fs.classList.add('open');
+  if(Object.keys(discFsSeatEls).length === 0){
+    discFsCanvasEl = document.getElementById('disc-fs-canvas');
+    discFsCtx      = discFsCanvasEl.getContext('2d');
+    buildSeatSet('discFsSeats', discFsSeatEls, fsSeatClick);
+    window.addEventListener('resize', () => { positionFsSeats(); drawFsLines(); });
+  }
+  setTimeout(() => { positionFsSeats(); drawFsLines(); }, 60);
+  updateDiscTurnCounter();
+}
+
+function closeDiscFullscreen(){
+  document.getElementById('discFullscreen').classList.remove('open');
+  if(DISC_FS_PENDING){
+    discFsSeatEls[DISC_FS_PENDING]?.classList.remove('speaking','first-speaker');
+    DISC_FS_PENDING = null;
+  }
+  DISC_FS_ACTIVE = false;
+  const btn = document.getElementById('discFsModeBtn');
+  btn.textContent = '▶ Start Session';
+  btn.className   = 'btn btn-teal';
+}
+
+function toggleDiscModeFS(){
+  DISC_FS_ACTIVE = !DISC_FS_ACTIVE;
+  const btn = document.getElementById('discFsModeBtn');
+  btn.textContent = DISC_FS_ACTIVE ? '⏹ Stop' : '▶ Start Session';
+  btn.className   = DISC_FS_ACTIVE ? 'btn btn-r' : 'btn btn-teal';
+  if(!DISC_FS_ACTIVE && DISC_FS_PENDING){
+    discFsSeatEls[DISC_FS_PENDING]?.classList.remove('speaking','first-speaker');
+    DISC_FS_PENDING = null;
+  }
+  document.getElementById('discFsStatus').textContent = DISC_FS_ACTIVE
+    ? 'Click first speaker' : 'Click a seat to begin';
+}
+
+function fsSeatClick(name){
+  if(!DISC_FS_ACTIVE){ toast('Press ▶ Start Session first'); return; }
+  // Reuse same single-click logic via main discSeatClick
+  const prev = DISC_ACTIVE;
+  DISC_ACTIVE = true;
+  discSeatClick(name);
+  DISC_ACTIVE = prev;
+  drawFsLines();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DRAWING — shared renderer for tab + fullscreen canvases
+// ═══════════════════════════════════════════════════════════════════
+function drawDiscLines(){
+  if(!discCanvasEl) return;
+  const wrap = document.getElementById('disc-seats');
+  if(!wrap) return;
+  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
+  drawOnCanvas(discCanvasEl, discCtx, W, H, discSeatEls, 'disc-seats');
+  updateDiscSidebar();
+}
+
+function drawFsLines(){
+  if(!discFsCanvasEl) return;
+  const wrap = document.getElementById('discFsSeats');
+  if(!wrap) return;
+  const W = wrap.offsetWidth || window.innerWidth, H = wrap.offsetHeight || window.innerHeight - 120;
+  drawOnCanvas(discFsCanvasEl, discFsCtx, W, H, discFsSeatEls, 'discFsSeats');
+}
+
+function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
+  canvas.width  = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  // Participation overlay — heat circles behind seats
+  if(SHOW_PART_OVERLAY){
+    const maxPart = Math.max(...ROSTER.map(r => SD[r.name]?.participation || 0), 1);
+    ROSTER.forEach(r => {
+      const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
+      const part = SD[r.name]?.participation || 0;
+      if(part === 0) return;
+      const x = pos.fx * W, y = pos.fy * H;
+      const radius = 20 + (part / maxPart) * 30;
+      const alpha  = 0.1 + (part / maxPart) * 0.25;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(74,140,245,${alpha})`;
+      ctx.fill();
+    });
+  }
+
+  // Draw lines grouped by question (so each Q thread looks coherent)
+  QUESTIONS.forEach(q => {
+    const qLines = DISC_LINES.filter(l => l.qid === q.id && l.from !== l.to);
+    qLines.forEach((line, i) => {
+      const posF = SEATING_LAYOUT_FLAT[line.from] || getDefaultPos(line.from);
+      const posT = SEATING_LAYOUT_FLAT[line.to]   || getDefaultPos(line.to);
+      const x1 = posF.fx * W, y1 = posF.fy * H;
+      const x2 = posT.fx * W, y2 = posT.fy * H;
+
+      // Line color: blend question thread color with type color
+      const qColor  = q.color;
+      const typeAlpha = 0.6;
+      const alpha = Math.min(.9, .25 + (i / Math.max(qLines.length, 1)) * .65);
+
+      ctx.beginPath();
+      ctx.strokeStyle = qColor;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth   = line.type === 'build' ? 2.5 : 1.8;
+      ctx.setLineDash(line.type === 'build' ? [6,4] : line.type === 'question' ? [3,3] : []);
+
+      // Bezier arc
+      const mx = (x1+x2)/2, my = (y1+y2)/2;
+      const dx = x2-x1, dy = y2-y1;
+      const len = Math.sqrt(dx*dx+dy*dy) || 1;
+      const curve = Math.min(len * .4, 100);
+      const cpx = mx - dy/len * curve;
+      const cpy = my + dx/len * curve;
+
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(cpx, cpy, x2, y2);
+      ctx.stroke();
+
+      // Arrowhead
+      ctx.setLineDash([]);
+      const t = .82;
+      const ax = (1-t)*(1-t)*x1 + 2*(1-t)*t*cpx + t*t*x2;
+      const ay = (1-t)*(1-t)*y1 + 2*(1-t)*t*cpy + t*t*y2;
+      const angle = Math.atan2(y2-ay, x2-ax);
+      const al = 10;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - al*Math.cos(angle-.45), y2 - al*Math.sin(angle-.45));
+      ctx.lineTo(x2 - al*Math.cos(angle+.45), y2 - al*Math.sin(angle+.45));
+      ctx.closePath();
+      ctx.fillStyle = qColor;
+      ctx.globalAlpha = Math.min(alpha + .1, 1);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+  });
+
+  // Draw type-colored dot at start of each line
+  DISC_LINES.filter(l=>l.from!==l.to).forEach(line => {
+    const pos = SEATING_LAYOUT_FLAT[line.from] || getDefaultPos(line.from);
+    const x = pos.fx * W, y = pos.fy * H;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.fillStyle = TYPE_COLORS[line.type] || '#888';
+    ctx.globalAlpha = .7;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+
+  // Turn counters on seats
+  ROSTER.forEach(r => {
+    const cnt = DISC_LINES.filter(l => l.from === r.name).length;
+    const cntEl = document.getElementById(wrapId + '-cnt-' + sid(r.name));
+    if(cntEl) cntEl.textContent = cnt;
+    const el = seatEls[r.name];
+    if(el){
+      el.style.borderColor = cnt > 4 ? 'var(--gold2)' : cnt > 1 ? 'var(--teal)' : '';
+      el.style.boxShadow   = cnt > 4 ? '0 0 14px rgba(255,209,102,.35)' : '';
+    }
+  });
+}
+
+function getDefaultPos(name){
+  // Fallback positions derived from SEATING_LAYOUT order
+  const idx = ROSTER.findIndex(r=>r.name===name);
+  return {fx: 0.1 + (idx % 9) * 0.1, fy: 0.1 + Math.floor(idx/9) * 0.25};
+}
+
+function updateDiscTurnCounter(){
+  const el = document.getElementById('discFsTurnCount');
+  if(el) el.textContent = DISC_LINES.length + ' turn' + (DISC_LINES.length!==1?'s':'');
+}
+
+function clearDiscLines(fromFs){
+  if(!confirm('Clear all discussion lines?')) return;
+  DISC_LINES = [];
+  DISC_TURN  = 0;
+  DISC_LAST_SPEAKER = null;
+  DISC_PENDING = null;
+  DISC_FS_PENDING = null;
+  QUESTIONS = [{id:0, label:'Q1', color:'#0ab8d4'}];
+  ACTIVE_Q  = 0;
+  ROSTER.forEach(r => {
+    discSeatEls[r.name]?.classList.remove('speaking','first-speaker');
+    discFsSeatEls[r.name]?.classList.remove('speaking','first-speaker');
+    const cell = document.getElementById('dgc-' + sid(r.name));
+    if(cell) cell.classList.remove('dg-speaking','dg-spoke');
+  });
+  saveLocal();
+  drawDiscLines();
+  drawFsLines();
+  renderQuestionTabs();
+  updateStats();
+  updateDiscTurnCounter();
+  toast('Discussion cleared');
+}
+
+function exportDiscJSON(){
+  const blob = new Blob([JSON.stringify({date:TODAY, questions:QUESTIONS, lines:DISC_LINES}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `discussion_${TODAY}.json`;
+  a.click();
+  toast('Discussion exported');
+}
+
+async function pushDiscLineToSheet(line){
+  if(!SCRIPT_URL) return;
+  try{
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'log_disc', ...line }),
+    });
+  }catch(e){}
+}
 
 // ── Build both canvases on load ──
 function buildDiscSeats(){
@@ -1462,326 +2103,15 @@ function positionFsSeats(){
 }
 function positionSeatSet(wrapId, elMap){
   const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
   const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
   ROSTER.forEach(r => {
-    const pos = DISC_POSITIONS[r.name] || {fx:.5, fy:.5};
+    const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
     const el  = elMap[r.name];
     if(!el) return;
     el.style.left = (pos.fx * W - 36) + 'px';
     el.style.top  = (pos.fy * H - 28) + 'px';
   });
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// DISC PICKER — triggered by Disc+ button on ANY desk card
-// ═══════════════════════════════════════════════════════════════════
-function openDiscPicker(speakerName){
-  PICKER_SPEAKER = speakerName;
-  PICKER_TYPE    = 'respond';
-
-  document.getElementById('dp-speaker-display').textContent = speakerName;
-
-  // Reset type buttons
-  document.querySelectorAll('.dp-type-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.dp-type-btn.t-respond').classList.add('active');
-  updatePickerListenerLabel();
-
-  // Build student grid — all classmates + "No one (new idea)" option
-  const grid = document.getElementById('dp-student-grid');
-  grid.innerHTML = '';
-
-  // "New idea / no response" shortcut
-  const selfBtn = document.createElement('button');
-  selfBtn.className = 'dp-student-btn self-btn';
-  selfBtn.textContent = '★ New idea';
-  selfBtn.title = 'No specific response — new contribution';
-  selfBtn.onclick = () => commitDiscTurn(speakerName, speakerName, 'new');
-  grid.appendChild(selfBtn);
-
-  ROSTER.forEach(r => {
-    if(r.name === speakerName) return; // skip self in main list
-    const btn = document.createElement('button');
-    btn.className = 'dp-student-btn';
-    btn.textContent = r.name;
-    btn.onclick = () => commitDiscTurn(speakerName, r.name, PICKER_TYPE);
-    grid.appendChild(btn);
-  });
-
-  document.getElementById('discPicker').classList.add('open');
-}
-
-function setDiscType(type, el){
-  PICKER_TYPE = type;
-  document.querySelectorAll('.dp-type-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  updatePickerListenerLabel();
-}
-
-function updatePickerListenerLabel(){
-  const labels = {
-    respond:  'Responding to…',
-    build:    'Building on…',
-    challenge:'Challenging…',
-    new:      'New contribution (pick any or "New idea")',
-    question: 'Asking a question of…',
-  };
-  document.getElementById('dp-listener-label').textContent = labels[PICKER_TYPE] || 'Responding to…';
-}
-
-function cancelDiscPicker(){
-  document.getElementById('discPicker').classList.remove('open');
-  PICKER_SPEAKER = null;
-}
-
-// ── Core commit — shared by picker AND map seat-click ──
-function commitDiscTurn(from, to, type){
-  // Close picker if open
-  document.getElementById('discPicker').classList.remove('open');
-
-  // Increment student discussion count
-  log1(from, 'discussion', 1);
-
-  // Add line (self-to-self = new idea, no line drawn — just logged)
-  DISC_LINES.push({ from, to, type, ts: Date.now(), turn: DISC_TURN++ });
-  saveLocal();
-
-  // Redraw both canvases
-  drawDiscLines();
-  if(document.getElementById('discFullscreen').classList.contains('open')) drawFsLines();
-
-  updateStats();
-  updateDiscTurnCounter();
-
-  // Push discussion line to sheet
-  if(SCRIPT_URL){
-    pushDiscLineToSheet({from, to, type, turn: DISC_TURN-1, date: TODAY});
-  }
-
-  const typeLabel = {respond:'responded to',build:'built on',challenge:'challenged',new:'new idea',question:'asked'}[type]||type;
-  toast(`${from} ${typeLabel} ${from===to?'(new idea)':to}`);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// TAB MAP — click mode (optional, for map-view tracking)
-// ═══════════════════════════════════════════════════════════════════
-function discSeatClick(name){
-  if(!DISC_ACTIVE){ toast('Use Disc+ buttons on desks, or press ▶ Start Discussion'); return; }
-  if(DISC_PENDING === null){
-    DISC_PENDING = name;
-    discSeatEls[name].classList.add('speaking');
-    if(DISC_TURN === 0) discSeatEls[name].classList.add('first-speaker');
-    document.getElementById('discStatusLabel').textContent = `"${name}" speaking → click who they respond to`;
-  } else {
-    const from = DISC_PENDING;
-    const to   = name;
-    const type = document.getElementById('discLineType').value;
-    discSeatEls[from].classList.remove('speaking','first-speaker');
-    DISC_PENDING = null;
-    document.getElementById('discStatusLabel').textContent = `Logged: ${from} → ${to}. Click next speaker.`;
-    commitDiscTurn(from, to, type);
-  }
-}
-
-function toggleDiscMode(){
-  DISC_ACTIVE = !DISC_ACTIVE;
-  const btn = document.getElementById('discModeBtn');
-  btn.textContent = DISC_ACTIVE ? '⏹ Stop' : '▶ Start Discussion';
-  btn.className   = DISC_ACTIVE ? 'btn btn-r' : 'btn btn-teal';
-  if(!DISC_ACTIVE && DISC_PENDING){
-    discSeatEls[DISC_PENDING]?.classList.remove('speaking','first-speaker');
-    DISC_PENDING = null;
-  }
-  document.getElementById('discStatusLabel').textContent = DISC_ACTIVE
-    ? 'Click a seat to mark speaker'
-    : 'Click Disc+ on any desk, or click seats here';
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// FULLSCREEN DISCUSSION MODE
-// ═══════════════════════════════════════════════════════════════════
-function openDiscFullscreen(){
-  const fs = document.getElementById('discFullscreen');
-  fs.classList.add('open');
-
-  // Build fullscreen seats if not yet built
-  if(Object.keys(discFsSeatEls).length === 0){
-    discFsCanvasEl = document.getElementById('disc-fs-canvas');
-    discFsCtx      = discFsCanvasEl.getContext('2d');
-    buildSeatSet('discFsSeats', discFsSeatEls, fsSeatClick);
-    window.addEventListener('resize', () => { positionFsSeats(); drawFsLines(); });
-  }
-
-  setTimeout(() => { positionFsSeats(); drawFsLines(); }, 60);
-  updateDiscTurnCounter();
-}
-
-function closeDiscFullscreen(){
-  document.getElementById('discFullscreen').classList.remove('open');
-  if(DISC_FS_PENDING){
-    discFsSeatEls[DISC_FS_PENDING]?.classList.remove('speaking','first-speaker');
-    DISC_FS_PENDING = null;
-  }
-  DISC_FS_ACTIVE = false;
-  const btn = document.getElementById('discFsModeBtn');
-  btn.textContent = '▶ Start Discussion';
-  btn.className   = 'btn btn-teal';
-}
-
-function toggleDiscModeFS(){
-  DISC_FS_ACTIVE = !DISC_FS_ACTIVE;
-  const btn = document.getElementById('discFsModeBtn');
-  btn.textContent = DISC_FS_ACTIVE ? '⏹ Stop' : '▶ Start Discussion';
-  btn.className   = DISC_FS_ACTIVE ? 'btn btn-r' : 'btn btn-teal';
-  if(!DISC_FS_ACTIVE && DISC_FS_PENDING){
-    discFsSeatEls[DISC_FS_PENDING]?.classList.remove('speaking','first-speaker');
-    DISC_FS_PENDING = null;
-  }
-  document.getElementById('discFsStatus').textContent = DISC_FS_ACTIVE
-    ? 'Click a seat to mark speaker'
-    : 'Click a seat to begin';
-}
-
-function fsSeatClick(name){
-  if(!DISC_FS_ACTIVE){ toast('Press ▶ Start Discussion first'); return; }
-  if(DISC_FS_PENDING === null){
-    DISC_FS_PENDING = name;
-    discFsSeatEls[name].classList.add('speaking');
-    if(DISC_TURN === 0) discFsSeatEls[name].classList.add('first-speaker');
-    document.getElementById('discFsStatus').textContent = `"${name}" speaking → click who they respond to`;
-  } else {
-    const from = DISC_FS_PENDING;
-    const to   = name;
-    const type = document.getElementById('discFsLineType').value;
-    discFsSeatEls[from].classList.remove('speaking','first-speaker');
-    DISC_FS_PENDING = null;
-    document.getElementById('discFsStatus').textContent = `Logged: ${from} → ${to}. Click next speaker.`;
-    commitDiscTurn(from, to, type);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// DRAW LINES — shared renderer for both canvases
-// ═══════════════════════════════════════════════════════════════════
-function drawDiscLines(){
-  if(!discCanvasEl) return;
-  const wrap = document.getElementById('disc-seats');
-  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
-  drawOnCanvas(discCanvasEl, discCtx, W, H, discSeatEls, 'disc-seats');
-}
-
-function drawFsLines(){
-  if(!discFsCanvasEl) return;
-  const wrap = document.getElementById('discFsSeats');
-  const W = wrap.offsetWidth || window.innerWidth, H = wrap.offsetHeight || window.innerHeight - 120;
-  drawOnCanvas(discFsCanvasEl, discFsCtx, W, H, discFsSeatEls, 'discFsSeats');
-}
-
-function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
-  canvas.width  = W;
-  canvas.height = H;
-  ctx.clearRect(0, 0, W, H);
-
-  DISC_LINES.forEach((line, i) => {
-    if(line.from === line.to) return; // new idea — no line
-    const posF = DISC_POSITIONS[line.from] || {fx:.5, fy:.5};
-    const posT = DISC_POSITIONS[line.to]   || {fx:.5, fy:.5};
-    const x1 = posF.fx * W, y1 = posF.fy * H;
-    const x2 = posT.fx * W, y2 = posT.fy * H;
-
-    const color = TYPE_COLORS[line.type] || '#4a8cf5';
-    const alpha = Math.min(.9, .2 + (i / Math.max(DISC_LINES.length, 1)) * .7);
-
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.globalAlpha = alpha;
-    ctx.lineWidth   = line.type === 'new' ? 1.5 : 1.5;
-    ctx.setLineDash(line.type === 'build' ? [5,4] : []);
-
-    // Bezier arc (flight path)
-    const mx = (x1+x2)/2, my = (y1+y2)/2;
-    const dx = x2-x1, dy = y2-y1;
-    const len = Math.sqrt(dx*dx+dy*dy) || 1;
-    const curve = Math.min(len * .35, 90);
-    const cpx = mx - dy/len * curve;
-    const cpy = my + dx/len * curve;
-
-    ctx.moveTo(x1, y1);
-    ctx.quadraticCurveTo(cpx, cpy, x2, y2);
-    ctx.stroke();
-
-    // Arrowhead
-    ctx.setLineDash([]);
-    const t = .82;
-    const ax = (1-t)*(1-t)*x1 + 2*(1-t)*t*cpx + t*t*x2;
-    const ay = (1-t)*(1-t)*y1 + 2*(1-t)*t*cpy + t*t*y2;
-    const angle = Math.atan2(y2-ay, x2-ax);
-    const al = 9;
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - al*Math.cos(angle-.4), y2 - al*Math.sin(angle-.4));
-    ctx.lineTo(x2 - al*Math.cos(angle+.4), y2 - al*Math.sin(angle+.4));
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  });
-
-  // Update turn counters + glow on seats
-  ROSTER.forEach(r => {
-    const cnt = DISC_LINES.filter(l => l.from === r.name).length;
-    const cntEl = document.getElementById(wrapId + '-cnt-' + sid(r.name));
-    if(cntEl) cntEl.textContent = cnt;
-    const el = seatEls[r.name];
-    if(el){
-      el.style.borderColor = cnt > 4 ? 'var(--gold2)' : cnt > 1 ? 'var(--teal)' : '';
-      el.style.boxShadow   = cnt > 4 ? '0 0 14px rgba(255,209,102,.35)' : '';
-    }
-  });
-}
-
-function updateDiscTurnCounter(){
-  const el = document.getElementById('discFsTurnCount');
-  if(el) el.textContent = DISC_LINES.length + ' turn' + (DISC_LINES.length!==1?'s':'');
-  document.getElementById('st-disc').textContent = DISC_LINES.length;
-}
-
-function clearDiscLines(fromFullscreen){
-  if(!confirm('Clear all discussion lines?')) return;
-  DISC_LINES   = [];
-  DISC_PENDING = null;
-  DISC_FS_PENDING = null;
-  DISC_TURN    = 0;
-  ROSTER.forEach(r => {
-    discSeatEls[r.name]?.classList.remove('speaking','first-speaker');
-    discFsSeatEls[r.name]?.classList.remove('speaking','first-speaker');
-  });
-  saveLocal();
-  drawDiscLines();
-  drawFsLines();
-  updateStats();
-  updateDiscTurnCounter();
-  toast('Discussion cleared');
-}
-
-function exportDiscJSON(){
-  const blob = new Blob([JSON.stringify({date:TODAY, lines:DISC_LINES}, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `discussion_${TODAY}.json`;
-  a.click();
-  toast('Discussion exported');
-}
-
-// Push individual disc line to sheet
-async function pushDiscLineToSheet(line){
-  if(!SCRIPT_URL) return;
-  try{
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'log_disc', ...line }),
-    });
-  }catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1903,24 +2233,9 @@ function switchPage(id, btn){
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='disc'){
-    setTimeout(()=>{positionDiscSeats();drawDiscLines();},50);
-  }
-}
-
-// PAGE SWITCHER
-// ═══════════════════════════════════════════════════════════════════
-function switchPage(id, btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  btn.classList.add('active');
-  if(id==='disc'){
-    setTimeout(()=>{positionDiscSeats();drawDiscLines();},50);
-  }
-  if(id==='pulse'){
-    setTimeout(()=>renderPulse(),60);
-  }
+  if(id==='disc')  setTimeout(()=>{positionDiscSeats();drawDiscLines();},50);
+  if(id==='pulse') setTimeout(()=>renderPulse(),60);
+  if(id==='seats') setTimeout(()=>renderSeatEditor(),60);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2313,6 +2628,183 @@ function exportPulseCSV(){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download=`class_pulse_${TODAY}.csv`; a.click();
   toast('↓ Pulse exported');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SEAT EDITOR
+// Drag-and-drop names between desks. Saves to SEATING_LAYOUT and
+// re-renders heatmap + discussion map automatically.
+// ═══════════════════════════════════════════════════════════════════
+let SE_DRAG_NAME = null;
+
+function renderSeatEditor(){
+  const grid = document.getElementById('seatEditorGrid');
+  if(!grid) return;
+
+  // Load saved layout from localStorage if present
+  const saved = localStorage.getItem('drexel_seats');
+  if(saved){ try{ SEATING_LAYOUT = JSON.parse(saved); computeLayoutFlat(); }catch(e){} }
+
+  // Build who is in a seat already
+  const assigned = new Set();
+  SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl => cl.rows.forEach(row => row.forEach(n => { if(n) assigned.add(n); }))));
+
+  // Unassigned pool
+  const pool = document.getElementById('seatPool');
+  if(pool){
+    pool.innerHTML = ROSTER.filter(r=>!assigned.has(r.name)).map(r =>
+      `<div class="se-name-chip" draggable="true"
+        ondragstart="seDragStart('${r.name}',event)"
+        ondragend="seDragEnd(event)">${r.name}</div>`
+    ).join('');
+  }
+
+  // Cluster grid
+  grid.innerHTML = '';
+  SEATING_LAYOUT.forEach((col, ci) => {
+    col.clusters.forEach((cl, cli) => {
+      const card = document.createElement('div');
+      card.className = 'se-cluster';
+      const numId = `cl-num-${ci}-${cli}`;
+      card.innerHTML = `
+        <div class="se-cluster-header">
+          <span style="font-size:9px;color:var(--text3);">Cluster</span>
+          <input class="se-cluster-num-input" id="${numId}" value="${cl.num||''}"
+            onchange="SEATING_LAYOUT[${ci}].clusters[${cli}].num=parseInt(this.value)||null"
+            placeholder="—">
+        </div>`;
+      cl.rows.forEach((row, ri) => {
+        const pair = document.createElement('div');
+        pair.className = 'se-pair';
+        row.forEach((name, di) => {
+          const deskId = `sed-${ci}-${cli}-${ri}-${di}`;
+          const deskDiv = document.createElement('div');
+          deskDiv.className = 'se-desk';
+          deskDiv.id = deskId;
+          deskDiv.setAttribute('data-ci', ci);
+          deskDiv.setAttribute('data-cli', cli);
+          deskDiv.setAttribute('data-ri', ri);
+          deskDiv.setAttribute('data-di', di);
+          deskDiv.ondragover = e => { e.preventDefault(); deskDiv.classList.add('drag-over'); };
+          deskDiv.ondragleave = () => deskDiv.classList.remove('drag-over');
+          deskDiv.ondrop = e => seDropOnDesk(e, ci, cli, ri, di);
+          if(name){
+            deskDiv.innerHTML = `
+              <div class="se-desk-name" draggable="true"
+                ondragstart="seDragStart('${name}',event)"
+                ondragend="seDragEnd(event)">${name}</div>
+              <button class="se-desk-del" onclick="seClearDesk(${ci},${cli},${ri},${di})" title="Remove">✕</button>`;
+          } else {
+            deskDiv.innerHTML = `<span class="se-desk-empty">empty</span>`;
+          }
+          pair.appendChild(deskDiv);
+        });
+        // Add desk button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'se-add-desk';
+        addBtn.textContent = '+ desk row';
+        addBtn.onclick = () => seAddRow(ci, cli);
+        card.appendChild(pair);
+      });
+      // Add row button
+      const addRowBtn = document.createElement('button');
+      addRowBtn.className = 'se-add-desk';
+      addRowBtn.style.cssText = 'margin-top:4px;width:100%;display:block;';
+      addRowBtn.textContent = '+ row';
+      addRowBtn.onclick = () => seAddRow(ci, cli);
+      card.appendChild(addRowBtn);
+      grid.appendChild(card);
+    });
+
+    // Add cluster button per column
+    const addCl = document.createElement('div');
+    addCl.style.cssText = 'grid-column:1;margin-top:6px;';
+    addCl.innerHTML = `<button class="se-add-desk" style="width:100%;" onclick="seAddCluster(${ci})">+ cluster in col ${ci+1}</button>`;
+    grid.appendChild(addCl);
+  });
+}
+
+function seDragStart(name, e){
+  SE_DRAG_NAME = name;
+  if(e.target) e.target.classList.add('dragging');
+}
+function seDragEnd(e){
+  if(e.target) e.target.classList.remove('dragging');
+}
+
+function seDropOnDesk(e, ci, cli, ri, di){
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  if(!SE_DRAG_NAME) return;
+
+  // Find if name was in another desk and clear it
+  SEATING_LAYOUT.forEach((col, c) => col.clusters.forEach((cl, cl2) => cl.rows.forEach((row, r) => {
+    const idx = row.indexOf(SE_DRAG_NAME);
+    if(idx >= 0) SEATING_LAYOUT[c].clusters[cl2].rows[r][idx] = null;
+  })));
+
+  // Place in target desk
+  SEATING_LAYOUT[ci].clusters[cli].rows[ri][di] = SE_DRAG_NAME;
+  SE_DRAG_NAME = null;
+  computeLayoutFlat();
+  renderSeatEditor();
+}
+
+function seClearDesk(ci, cli, ri, di){
+  SEATING_LAYOUT[ci].clusters[cli].rows[ri][di] = null;
+  renderSeatEditor();
+}
+
+function seAddRow(ci, cli){
+  SEATING_LAYOUT[ci].clusters[cli].rows.push([null, null]);
+  renderSeatEditor();
+}
+
+function seAddCluster(ci){
+  SEATING_LAYOUT[ci].clusters.push({num: null, rows:[[null,null]]});
+  renderSeatEditor();
+}
+
+function addCluster(){
+  // Add to first column by default
+  SEATING_LAYOUT[0].clusters.push({num: null, rows:[[null,null]]});
+  renderSeatEditor();
+}
+
+function saveSeats(){
+  // Update ROSTER to match new layout
+  const newOrder = [];
+  const seen = new Set();
+  SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl => {
+    const clNum = cl.num;
+    cl.rows.forEach(row => row.forEach(name => {
+      if(name && !seen.has(name)){
+        seen.add(name);
+        const existing = ROSTER.find(r=>r.name===name);
+        newOrder.push({name, cluster: clNum || (existing?.cluster ?? null)});
+      }
+    }));
+  }));
+  // Add any roster members not in layout
+  ROSTER.forEach(r => { if(!seen.has(r.name)) newOrder.push(r); });
+
+  // Save layout to localStorage
+  localStorage.setItem('drexel_seats', JSON.stringify(SEATING_LAYOUT));
+  computeLayoutFlat();
+
+  // Rebuild all views
+  buildAllDesks();
+  rerenderDesks();
+  if(discSeatEls && Object.keys(discSeatEls).length > 0){
+    buildDiscSeats();
+  }
+  toast('✓ Seating saved — Heatmap + Discussion Map updated!');
+}
+
+function resetSeats(){
+  if(!confirm('Reset seating to original layout?')) return;
+  localStorage.removeItem('drexel_seats');
+  location.reload();
 }
 
 // ═══════════════════════════════════════════════════════════════════
