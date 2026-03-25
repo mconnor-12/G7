@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -643,120 +643,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 <div class="page active" id="page-heatmap">
 <div class="room-wrap">
   <div class="front-banner">▲ FRONT OF ROOM — Drexel Melendez</div>
-
-  <div class="seating-grid" id="seatingGrid">
-    <!-- Left column: 6, 7, back-left -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">6</div>
-        <div class="desk-pair">
-          <div id="dk-Andry"></div>
-          <div id="dk-empty-6a" class="desk empty" style="min-height:80px;"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Samuel"></div>
-          <div id="dk-Dashaun"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">7</div>
-        <div class="desk-pair">
-          <div id="dk-Sarah"></div>
-          <div id="dk-Dasha"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Osmari"></div>
-          <div id="dk-Wismarlin"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div style="height:18px;"></div>
-        <div class="desk-pair">
-          <div id="dk-empty-bl" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-John_Thomas"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-frank-Isaiah"></div>
-          <div id="dk-Xavier"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Center column: 5, 4 -->
-    <div style="display:flex;flex-direction:column;gap:18px;padding-top:52px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">5</div>
-        <div class="desk-pair">
-          <div id="dk-Ethan"></div>
-          <div id="dk-Derek_P"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Hector_T"></div>
-          <div id="dk-empty-5b" class="desk empty" style="min-height:80px;"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">4</div>
-        <div class="desk-pair">
-          <div id="dk-Emily"></div>
-          <div id="dk-Zoey"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Eli"></div>
-          <div id="dk-Hector_H"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Right column: 1, 2, 3 -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
-
-      <div class="cluster">
-        <div class="cluster-badge">1</div>
-        <div class="desk-pair">
-          <div id="dk-empty-1a" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-Jazzia"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Saihana"></div>
-          <div id="dk-Raynell_L"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">2</div>
-        <div class="desk-pair">
-          <div id="dk-Derek"></div>
-          <div id="dk-Ambar"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-Sophia_U"></div>
-          <div id="dk-Mike"></div>
-        </div>
-      </div>
-
-      <div class="cluster">
-        <div class="cluster-badge">3</div>
-        <div class="desk-pair">
-          <div id="dk-Aris"></div>
-          <div id="dk-Logan"></div>
-        </div>
-        <div class="desk-pair">
-          <div id="dk-empty-3b" class="desk empty" style="min-height:80px;"></div>
-          <div id="dk-Joshua"></div>
-        </div>
-      </div>
-
-    </div>
-  </div><!-- /seating-grid -->
-
+  <div class="seating-grid" id="seatingGrid"><!-- built by JS --></div>
   <div class="door-label">DOOR ▶</div>
 </div>
 </div><!-- /page-heatmap -->
@@ -1174,10 +1061,56 @@ function saveScriptUrl(){
 // ── Safe ID helper — replaces spaces/apostrophes with underscores ──
 function sid(name){ return name.replace(/[\s']/g,'_'); }
 
+// ── Empty desk placeholder ──
+function emptyDesk(h){ return `<div class="desk empty" style="min-height:${h||80}px;"></div>`; }
+
+// ── Build a single named desk slot div ──
+function deskSlotHTML(name){
+  return `<div id="dk-${sid(name)}" data-name="${name}"></div>`;
+}
+
 // ═══════════════════════════════════════════════════════════════════
-// BUILD DESK CARDS
+// BUILD ENTIRE SEATING GRID FROM JS — immune to HTML caching issues
 // ═══════════════════════════════════════════════════════════════════
 function buildAllDesks(){
+  const grid = document.getElementById('seatingGrid');
+  if(!grid) return;
+
+  // Layout mirrors the physical room exactly
+  // Each column is an array of clusters; each cluster has rows of [name|null]
+  // null = empty desk placeholder
+  const LAYOUT = [
+    // ── LEFT COLUMN ──
+    { pt: 0, clusters: [
+      { num: 6, rows: [['Andry', null], ['Samuel','Dashaun']] },
+      { num: 7, rows: [['Sarah','Dasha'], ['Osmari','Wismarlin']] },
+      { num: null, rows: [[null,'John Thomas'], ['frank-Isaiah','Xavier']] },
+    ]},
+    // ── CENTER COLUMN ──
+    { pt: 52, clusters: [
+      { num: 5, rows: [['Ethan','Derek P'], ['Hector T', null]] },
+      { num: 4, rows: [['Emily','Zoey'], ['Eli','Hector H']] },
+    ]},
+    // ── RIGHT COLUMN ──
+    { pt: 0, clusters: [
+      { num: 1, rows: [[null,'Jazzia'], ['Saihana','Raynell L']] },
+      { num: 2, rows: [['Derek','Ambar'], ['Sophia U','Mike']] },
+      { num: 3, rows: [['Aris','Logan'], [null,'Joshua']] },
+    ]},
+  ];
+
+  grid.innerHTML = LAYOUT.map(col => {
+    const colHTML = col.clusters.map(cl => {
+      const badge = cl.num ? `<div class="cluster-badge">${cl.num}</div>` : `<div style="height:18px;"></div>`;
+      const pairsHTML = cl.rows.map(row =>
+        `<div class="desk-pair">${row.map(n => n ? deskSlotHTML(n) : emptyDesk()).join('')}</div>`
+      ).join('');
+      return `<div class="cluster">${badge}${pairsHTML}</div>`;
+    }).join('');
+    return `<div style="display:flex;flex-direction:column;gap:18px;${col.pt?'padding-top:'+col.pt+'px;':''}">${colHTML}</div>`;
+  }).join('');
+
+  // Now inject the desk card content into every slot
   ROSTER.forEach(r => buildDesk(r.name));
 }
 
