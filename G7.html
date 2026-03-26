@@ -795,8 +795,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 
     <!-- Flight map (left, main) -->
     <div class="disc-canvas-wrap" id="discMapLeft" style="flex:1;position:relative;overflow:hidden;">
-      <canvas id="disc-canvas"></canvas>
-      <div id="disc-seats"></div>
+      <canvas id="disc-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+      <div id="disc-seats" style="position:absolute;inset:0;"></div>
       <!-- speaking prompt overlay -->
       <div id="speakPrompt" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
         background:var(--bg2);border:1.5px solid var(--gold2);border-radius:8px;
@@ -1717,15 +1717,15 @@ function buildDiscSidebarGrid(){
 
 // ── Position map seats ────────────────────────────────────────────
 function positionDiscSeats(){
-  positionSeatSet('disc-seats', discSeatEls);
+  positionSeatSet('disc-seats', discSeatEls, 'discMapLeft');
 }
 function positionFsSeats(){
-  positionSeatSet('discFsSeats', discFsSeatEls);
+  positionSeatSet('discFsSeats', discFsSeatEls, 'discFsWrap');
 }
-function positionSeatSet(wrapId, elMap){
-  const wrap = document.getElementById(wrapId);
-  if(!wrap) return;
-  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
+function positionSeatSet(wrapId, elMap, parentId){
+  const parent = document.getElementById(parentId || wrapId);
+  if(!parent) return;
+  const W = parent.offsetWidth || 800, H = parent.offsetHeight || 500;
   ROSTER.forEach(r => {
     const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
     const el  = elMap[r.name];
@@ -1955,29 +1955,28 @@ function fsSeatClick(name){
 // ═══════════════════════════════════════════════════════════════════
 function drawDiscLines(){
   if(!discCanvasEl) return;
-  const wrap = document.getElementById('disc-seats');
-  if(!wrap) return;
-  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
+  const W = discCanvasEl.offsetWidth  || discCanvasEl.clientWidth  || 800;
+  const H = discCanvasEl.offsetHeight || discCanvasEl.clientHeight || 500;
   drawOnCanvas(discCanvasEl, discCtx, W, H, discSeatEls, 'disc-seats');
   updateDiscSidebar();
 }
 
 function drawFsLines(){
   if(!discFsCanvasEl) return;
-  const wrap = document.getElementById('discFsSeats');
-  if(!wrap) return;
-  const W = wrap.offsetWidth || window.innerWidth, H = wrap.offsetHeight || window.innerHeight - 120;
+  const W = discFsCanvasEl.offsetWidth  || discFsCanvasEl.clientWidth  || window.innerWidth;
+  const H = discFsCanvasEl.offsetHeight || discFsCanvasEl.clientHeight || window.innerHeight - 120;
   drawOnCanvas(discFsCanvasEl, discFsCtx, W, H, discFsSeatEls, 'discFsSeats');
 }
 
-// ── Get the center pixel of a seat element relative to its canvas wrap ──
-function getSeatCenter(el, wrap){
-  if(!el || !wrap) return null;
+// ── Get the center pixel of a seat element relative to the canvas element ──
+function getSeatCenter(el, canvasEl){
+  if(!el || !canvasEl) return null;
   const er = el.getBoundingClientRect();
-  const wr = wrap.getBoundingClientRect();
+  const cr = canvasEl.getBoundingClientRect();
+  if(cr.width === 0 || cr.height === 0) return null;
   return {
-    x: er.left - wr.left + er.width  / 2,
-    y: er.top  - wr.top  + er.height / 2,
+    x: er.left - cr.left + er.width  / 2,
+    y: er.top  - cr.top  + er.height / 2,
   };
 }
 
@@ -1988,11 +1987,11 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
 
   const wrap = document.getElementById(wrapId);
 
-  // ── Build a live pixel-center map for every seat ──
+  // ── Build a live pixel-center map — measured relative to THIS canvas element ──
   const centers = {};
   ROSTER.forEach(r => {
     const el = seatEls[r.name];
-    const c  = getSeatCenter(el, wrap);
+    const c  = getSeatCenter(el, canvas);  // use canvas as reference, not wrap
     if(c) centers[r.name] = c;
   });
 
@@ -2170,15 +2169,15 @@ function buildSeatSet(wrapId, elMap, clickFn){
 }
 
 function positionDiscSeats(){
-  positionSeatSet('disc-seats', discSeatEls);
+  positionSeatSet('disc-seats', discSeatEls, 'discMapLeft');
 }
 function positionFsSeats(){
-  positionSeatSet('discFsSeats', discFsSeatEls);
+  positionSeatSet('discFsSeats', discFsSeatEls, 'discFsWrap');
 }
-function positionSeatSet(wrapId, elMap){
-  const wrap = document.getElementById(wrapId);
-  if(!wrap) return;
-  const W = wrap.offsetWidth || 800, H = wrap.offsetHeight || 500;
+function positionSeatSet(wrapId, elMap, parentId){
+  const parent = document.getElementById(parentId || wrapId);
+  if(!parent) return;
+  const W = parent.offsetWidth || 800, H = parent.offsetHeight || 500;
   ROSTER.forEach(r => {
     const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
     const el  = elMap[r.name];
