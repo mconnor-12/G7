@@ -1144,26 +1144,37 @@ const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?form
 const TODAY    = new Date().toISOString().slice(0,10);
 
 const ROSTER = [
-  {name:'Andry',        cluster:6}, {name:'Samuel',       cluster:6}, {name:'Dashaun',      cluster:6},
-  {name:'Sarah',        cluster:7}, {name:'Dasha',        cluster:7}, {name:'Osmari',       cluster:7}, {name:'Wismarlin',    cluster:7},
-  {name:'John Thomas',  cluster:null},{name:'frank-Isaiah', cluster:null},{name:'Xavier',       cluster:null},
-  {name:'Ethan',        cluster:5}, {name:'Derek P',      cluster:5}, {name:'Hector T',     cluster:5},
-  {name:'Emily',        cluster:4}, {name:'Zoey',         cluster:4}, {name:'Eli',          cluster:4}, {name:'Hector H',     cluster:4},
-  {name:'Jazzia',       cluster:1}, {name:'Saihana',      cluster:1}, {name:'Raynell L',    cluster:1},
-  {name:'Derek',        cluster:2}, {name:'Ambar',        cluster:2}, {name:'Sophia U',     cluster:2}, {name:'Mike',         cluster:2},
-  {name:'Aris',         cluster:3}, {name:'Logan',        cluster:3}, {name:'Joshua',       cluster:3},
+  {name:'Joshua',       cluster:8}, {name:'Aris',         cluster:8}, {name:'Logan',        cluster:8},
+  {name:'Dasha',        cluster:7}, {name:'Wismarlin',    cluster:7}, {name:'Eli',          cluster:7},
+  {name:'Osmari',       cluster:6}, {name:'Emily',        cluster:6}, {name:'Sarah',        cluster:6}, {name:'Zoey',         cluster:6},
+  {name:'Samuel',       cluster:5}, {name:'Jazzia',       cluster:5}, {name:'Dashaun',      cluster:5}, {name:'Ambar',        cluster:5},
+  {name:'Hector H',     cluster:4}, {name:'Derek',        cluster:4}, {name:'Hector T',     cluster:4},
+  {name:'frank-Isaiah', cluster:3}, {name:'John Thomas',  cluster:3}, {name:'Xavier',       cluster:3},
+  {name:'Ethan',        cluster:2}, {name:'Derek P',      cluster:2}, {name:'Sophia U',     cluster:2},
+  {name:'Saihana',      cluster:1}, {name:'Mike',         cluster:1}, {name:'Raynell L',    cluster:1}, {name:'Andry',        cluster:1},
 ];
 
-// ── Seed flat positions from known coordinates — fy FLIPPED (front=bottom) ──
+// ── Seed flat positions — fy: 0=top(back of room) 1=bottom(front) ──
 const DISC_POSITIONS_SEED = {
-  'Andry':       {fx:.10,fy:.82}, 'Samuel':     {fx:.10,fy:.68}, 'Dashaun':    {fx:.22,fy:.75},
-  'Sarah':       {fx:.10,fy:.50}, 'Dasha':      {fx:.10,fy:.36}, 'Osmari':     {fx:.22,fy:.44}, 'Wismarlin':  {fx:.22,fy:.30},
-  'John Thomas': {fx:.10,fy:.18}, 'frank-Isaiah':{fx:.22,fy:.13},'Xavier':     {fx:.10,fy:.07},
-  'Ethan':       {fx:.38,fy:.78}, 'Derek P':    {fx:.50,fy:.85}, 'Hector T':  {fx:.38,fy:.62},
-  'Emily':       {fx:.44,fy:.45}, 'Zoey':       {fx:.56,fy:.50}, 'Eli':        {fx:.44,fy:.30}, 'Hector H':  {fx:.56,fy:.35},
-  'Jazzia':      {fx:.75,fy:.88}, 'Saihana':    {fx:.87,fy:.82}, 'Raynell L': {fx:.88,fy:.70},
-  'Derek':       {fx:.75,fy:.56}, 'Ambar':      {fx:.88,fy:.58}, 'Sophia U':  {fx:.76,fy:.42}, 'Mike':       {fx:.88,fy:.44},
-  'Aris':        {fx:.76,fy:.27}, 'Logan':      {fx:.88,fy:.28}, 'Joshua':    {fx:.84,fy:.14},
+  // LEFT col (clusters 8,7,6)
+  'Joshua':      {fx:.12,fy:.08}, 'Aris':       {fx:.20,fy:.08},
+  'Logan':       {fx:.12,fy:.15},
+  'Dasha':       {fx:.12,fy:.28}, 'Wismarlin':  {fx:.20,fy:.28},
+  'Eli':         {fx:.12,fy:.36},
+  'Osmari':      {fx:.12,fy:.52}, 'Emily':      {fx:.20,fy:.52},
+  'Sarah':       {fx:.12,fy:.60}, 'Zoey':       {fx:.20,fy:.60},
+  // CENTER col (clusters 5,4)
+  'Samuel':      {fx:.42,fy:.08}, 'Jazzia':     {fx:.50,fy:.08},
+  'Dashaun':     {fx:.42,fy:.16}, 'Ambar':      {fx:.50,fy:.16},
+  'Hector H':    {fx:.42,fy:.44}, 'Derek':      {fx:.50,fy:.44},
+  'Hector T':    {fx:.42,fy:.52},
+  // RIGHT col (clusters 3,2,1)
+  'frank-Isaiah':{fx:.72,fy:.08}, 'John Thomas':{fx:.82,fy:.08},
+  'Xavier':      {fx:.72,fy:.16},
+  'Ethan':       {fx:.72,fy:.36}, 'Derek P':    {fx:.82,fy:.36},
+  'Sophia U':    {fx:.72,fy:.44},
+  'Saihana':     {fx:.72,fy:.68}, 'Mike':       {fx:.82,fy:.68},
+  'Raynell L':   {fx:.72,fy:.76}, 'Andry':      {fx:.82,fy:.76},
 };
 
 // ── Student data model ──
@@ -1189,22 +1200,22 @@ let DISC_FS_PENDING = null;
 // Edit this via the Seat Editor tab or directly here
 // Each column → clusters → rows of [name|null]
 let SEATING_LAYOUT = [
-  // LEFT col — back-of-room at top, front at bottom
+  // LEFT col — back→front (top of screen = back of room)
   { pt:0, clusters:[
-    { num:null, rows:[[null,'John Thomas'],['frank-Isaiah','Xavier']] },
-    { num:7,    rows:[['Osmari','Wismarlin'],['Sarah','Dasha']] },
-    { num:6,    rows:[['Samuel','Dashaun'],['Andry',null]] },
+    { num:8, rows:[['Joshua','Aris'],['Logan',null]] },
+    { num:7, rows:[['Dasha','Wismarlin'],['Eli',null]] },
+    { num:6, rows:[['Osmari','Emily'],['Sarah','Zoey']] },
   ]},
-  // CENTER col — back-of-room at top, front at bottom
+  // CENTER col
   { pt:0, clusters:[
-    { num:4, rows:[['Eli','Hector H'],['Emily','Zoey']] },
-    { num:5, rows:[['Hector T',null],['Ethan','Derek P']] },
+    { num:5, rows:[['Samuel','Jazzia'],['Dashaun','Ambar']] },
+    { num:4, rows:[['Hector H','Derek'],['Hector T',null]] },
   ]},
-  // RIGHT col — back-of-room at top, front at bottom
+  // RIGHT col — John Thomas top-right corner
   { pt:0, clusters:[
-    { num:3, rows:[[null,'Joshua'],['Aris','Logan']] },
-    { num:2, rows:[['Sophia U','Mike'],['Derek','Ambar']] },
-    { num:1, rows:[['Saihana','Raynell L'],[null,'Jazzia']] },
+    { num:3, rows:[['frank-Isaiah','John Thomas'],['Xavier',null]] },
+    { num:2, rows:[['Ethan','Derek P'],['Sophia U',null]] },
+    { num:1, rows:[['Saihana','Mike'],['Raynell L','Andry']] },
   ]},
 ];
 
