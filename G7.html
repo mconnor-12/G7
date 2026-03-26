@@ -1503,9 +1503,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets, 1200); }
     else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
 
-    // Pull seating from Sheets on load if Script URL is configured (Sheets = source of truth)
+    // Push the current (correct) seating layout to Sheets on load so Sheet stays in sync.
+    // We do NOT pull from Sheets on load — the hardcoded SEATING_LAYOUT is the source of truth.
+    // Teacher uses "Pull from Sheets" manually only if they edited seats directly in the Sheet.
     if(SCRIPT_URL && SCRIPT_URL.includes('/exec')){
-      setTimeout(pullSeatingLayout, 2000);
+      setTimeout(() => pushSeatingLayout().catch(()=>{}), 3000);
     }
 
     // Apply active day LAP labels to panel buttons
