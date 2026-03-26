@@ -47,6 +47,98 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ntab.disc-tab.active{color:var(--teal2);border-bottom-color:var(--teal);}
 .ntab.pulse-tab.active{color:var(--purple2);border-bottom-color:var(--purple);}
 .ntab.seats-tab.active{color:var(--amber2);border-bottom-color:var(--amber);}
+.ntab.newday-tab.active{color:var(--green2);border-bottom-color:var(--green);}
+
+/* ══ NEW DAY SETUP PAGE ══════════════════════════════════════════ */
+#page-newday{padding:0;}
+.nd-wrap{max-width:820px;margin:0 auto;padding:24px 20px;}
+.nd-header{
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:800;
+  color:var(--green2);margin-bottom:4px;
+}
+.nd-sub{font-size:12px;color:var(--text2);margin-bottom:24px;}
+.nd-section{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--text3);margin:20px 0 8px;
+}
+.nd-card{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:10px;padding:18px 20px;margin-bottom:14px;
+}
+.nd-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;}
+.nd-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.nd-label{font-size:10px;font-weight:600;color:var(--text2);}
+.nd-input{
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);border-radius:6px;padding:7px 10px;
+  font-size:12px;font-family:'DM Sans',sans-serif;
+  transition:border-color .15s;
+}
+.nd-input:focus{outline:none;border-color:var(--green);}
+.nd-lap-block{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:8px;padding:14px 16px;flex:1;min-width:180px;
+  display:flex;flex-direction:column;gap:8px;
+  transition:border-color .2s;
+}
+.nd-lap-block.active-lap{border-color:var(--green);background:rgba(46,204,138,.06);}
+.nd-lap-num{
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:800;
+  letter-spacing:.06em;color:var(--text2);
+}
+.nd-lap-num.active{color:var(--green2);}
+.nd-lap-task{
+  background:transparent;border:none;border-bottom:1px solid var(--border2);
+  color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;
+  padding:4px 0;width:100%;outline:none;
+  transition:border-color .15s;
+}
+.nd-lap-task:focus{border-bottom-color:var(--green);}
+.nd-lap-task::placeholder{color:var(--text3);}
+.nd-active-toggle{
+  display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text2);
+}
+.nd-toggle{
+  width:28px;height:14px;border-radius:7px;background:var(--bg5);
+  position:relative;transition:background .2s;cursor:pointer;flex-shrink:0;
+}
+.nd-toggle.on{background:var(--green);}
+.nd-toggle::after{
+  content:'';position:absolute;width:10px;height:10px;
+  border-radius:50%;background:#fff;top:2px;left:2px;
+  transition:left .2s;
+}
+.nd-toggle.on::after{left:16px;}
+.nd-start-btn{
+  background:var(--greenbg);border:1.5px solid var(--green);
+  color:var(--green2);border-radius:8px;padding:12px 28px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;letter-spacing:.04em;transition:all .15s;
+  display:flex;align-items:center;gap:8px;
+}
+.nd-start-btn:hover{background:rgba(46,204,138,.16);}
+.nd-history-row{
+  display:flex;gap:8px;align-items:center;
+  padding:8px 10px;border-radius:6px;background:var(--bg3);
+  border:1px solid var(--border);cursor:pointer;transition:background .15s;
+  font-size:11px;
+}
+.nd-history-row:hover{background:var(--bg4);}
+.nd-hist-date{font-weight:700;color:var(--text);min-width:90px;font-family:'DM Mono',monospace;font-size:10px;}
+.nd-hist-laps{display:flex;gap:5px;flex:1;flex-wrap:wrap;}
+.nd-hist-lap{
+  font-size:9px;padding:2px 7px;border-radius:4px;
+  background:var(--bg4);color:var(--text2);
+}
+.nd-hist-lap.prof{background:rgba(46,204,138,.15);color:var(--green2);}
+.nd-current-day-banner{
+  background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.3);
+  border-radius:8px;padding:10px 14px;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;
+}
+.nd-banner-date{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--green2);}
+.nd-banner-laps{display:flex;gap:6px;flex-wrap:wrap;}
 .nav-right{display:flex;align-items:center;gap:8px;}
 .sync-pill{
   font-size:10px;font-weight:600;font-family:'DM Mono',monospace;
@@ -697,6 +789,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
       <button class="ntab disc-tab" onclick="switchPage('disc',this)">✈ Discussion Map</button>
       <button class="ntab pulse-tab" onclick="switchPage('pulse',this)">📈 Class Pulse</button>
       <button class="ntab seats-tab" onclick="switchPage('seats',this)">✏️ Edit Seats</button>
+      <button class="ntab newday-tab" onclick="switchPage('newday',this)">📅 New Day</button>
     </div>
   </div>
   <div class="nav-right">
@@ -734,6 +827,18 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
   <div class="sc"><div class="sc-label">Approaching</div><div class="sc-val" id="st-appr" style="color:var(--amber2)">—</div></div>
   <div class="sc"><div class="sc-label">Emerging</div><div class="sc-val" id="st-emer" style="color:var(--red2)">—</div></div>
   <div class="sc"><div class="sc-label">Disc. Turns</div><div class="sc-val" id="st-disc" style="color:var(--teal2)">—</div></div>
+  <!-- Active day pill -->
+  <div id="st-day-pill" style="display:none;align-items:center;gap:6px;
+    background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.25);
+    border-radius:6px;padding:4px 10px;cursor:pointer;"
+    onclick="switchPage('newday',document.querySelector('.newday-tab'))"
+    title="Click to configure day">
+    <div style="width:6px;height:6px;border-radius:50%;background:var(--green2);animation:pulse 2s infinite;flex-shrink:0;"></div>
+    <div style="display:flex;flex-direction:column;gap:1px;">
+      <div style="font-size:9px;font-weight:700;color:var(--green2);" id="st-day-date">—</div>
+      <div style="font-size:8px;color:var(--text2);font-family:'DM Mono';" id="st-day-laps">—</div>
+    </div>
+  </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
     <span style="font-size:10px;color:var(--text2);">Heat:</span>
     <select id="heatMetric" onchange="rerenderDesks()" style="font-size:10px;">
@@ -1061,6 +1166,103 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
   </div>
 </div>
 
+<!-- ══ PAGE: NEW DAY SETUP ════════════════════════════════════════ -->
+<div class="page" id="page-newday">
+  <div class="nd-wrap">
+    <div class="nd-header">📅 New Day Setup</div>
+    <div class="nd-sub">Configure today's LAPs with task names, activate them for the live tracker, and track data day-by-day across the week.</div>
+
+    <!-- Current active day banner -->
+    <div class="nd-current-day-banner" id="ndCurrentBanner" style="display:none;">
+      <div>
+        <div style="font-size:9px;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Active Day</div>
+        <div class="nd-banner-date" id="ndBannerDate">—</div>
+      </div>
+      <div class="nd-banner-laps" id="ndBannerLaps"></div>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-b" onclick="switchPage('heatmap',document.querySelector('.ntab'))">→ Go to Live Tracker</button>
+      </div>
+    </div>
+
+    <!-- Day config card -->
+    <div class="nd-card">
+      <div class="nd-section">Day Configuration</div>
+      <div class="nd-row">
+        <div class="nd-field" style="max-width:180px;">
+          <div class="nd-label">Date</div>
+          <input type="date" class="nd-input" id="ndDate">
+        </div>
+        <div class="nd-field" style="max-width:220px;">
+          <div class="nd-label">Class / Period Label (optional)</div>
+          <input type="text" class="nd-input" id="ndPeriodLabel" placeholder="e.g. Period 3 · Social Studies">
+        </div>
+        <div class="nd-field" style="max-width:180px;">
+          <div class="nd-label">Unit / Week</div>
+          <input type="text" class="nd-input" id="ndUnit" placeholder="e.g. Unit 4 · Week 9">
+        </div>
+      </div>
+
+      <!-- LAP blocks -->
+      <div class="nd-section">LAP Configuration — name each assessment task</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+
+        <div class="nd-lap-block" id="ndLap1Block">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="nd-lap-num" id="ndLap1Num">LAP 1</div>
+            <div class="nd-active-toggle" onclick="toggleLapActive(1)">
+              <div class="nd-toggle" id="ndTog1"></div>
+              <span id="ndTog1Label">Off</span>
+            </div>
+          </div>
+          <input class="nd-lap-task" id="ndLap1Task" placeholder="Task name (e.g. Context Clues)" oninput="updateLapPreview()">
+          <div style="font-size:9px;color:var(--text3);" id="ndLap1Hint">Mastery: Proficient / Approaching / Emerging</div>
+        </div>
+
+        <div class="nd-lap-block" id="ndLap2Block">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="nd-lap-num" id="ndLap2Num">LAP 2</div>
+            <div class="nd-active-toggle" onclick="toggleLapActive(2)">
+              <div class="nd-toggle" id="ndTog2"></div>
+              <span id="ndTog2Label">Off</span>
+            </div>
+          </div>
+          <input class="nd-lap-task" id="ndLap2Task" placeholder="Task name (e.g. Main Idea)" oninput="updateLapPreview()">
+          <div style="font-size:9px;color:var(--text3);" id="ndLap2Hint">Mastery: Proficient / Approaching / Emerging</div>
+        </div>
+
+        <div class="nd-lap-block" id="ndLap3Block">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="nd-lap-num" id="ndLap3Num">LAP 3</div>
+            <div class="nd-active-toggle" onclick="toggleLapActive(3)">
+              <div class="nd-toggle" id="ndTog3"></div>
+              <span id="ndTog3Label">Off</span>
+            </div>
+          </div>
+          <input class="nd-lap-task" id="ndLap3Task" placeholder="Task name (e.g. Evidence Use)" oninput="updateLapPreview()">
+          <div style="font-size:9px;color:var(--text3);" id="ndLap3Hint">Mastery: Proficient / Approaching / Emerging</div>
+        </div>
+
+      </div>
+
+      <!-- Column preview -->
+      <div style="background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:var(--text2);">
+        <span style="font-weight:700;color:var(--text);">Sheet columns for this day: </span>
+        <span id="ndColPreview" style="font-family:'DM Mono',monospace;color:var(--teal2);">—</span>
+      </div>
+
+      <button class="nd-start-btn" onclick="startNewDay()">
+        ▶ Start This Day
+      </button>
+    </div>
+
+    <!-- Day history -->
+    <div class="nd-section">Day History — click to restore / view</div>
+    <div id="ndHistoryList" style="display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:11px;color:var(--text3);font-style:italic;">No days recorded yet.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ DISC PICKER POPUP ══════════════════════════════════════════ -->
 <div class="disc-picker" id="discPicker">
   <div class="dp-box">
@@ -1291,6 +1493,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     loadLocal();
     loadCheckpoints();
+    loadDayHistory();
     buildAllDesks();
     rerenderDesks();
     updateStats();
@@ -1299,6 +1502,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const ls = localStorage.getItem('drexel_lastsync');
     if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets, 1200); }
     else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
+
+    // Apply active day LAP labels to panel buttons
+    setTimeout(updateLapButtonLabels, 100);
 
   } catch(err) {
     console.error('Init error:', err);
@@ -1441,10 +1647,9 @@ function log1(name, field, delta){
   saveLocal();
   rerenderDesk(name);
   updateStats();
-  // Refresh panel if open
   if(PANEL_STUDENT===name) refreshPanel();
+  snapshotStudentDay(name);
   toast(`${name} · ${label} → ${s[field]}`);
-  // Push single row to sheet
   pushToSheet(name);
 }
 
@@ -1459,13 +1664,16 @@ function quickDiscFromDesk(name){
 }
 
 function quickMastery(name, level){
+  SD[name].mastery[`lap${ACTIVE_LAP}`] = level;
   const ts = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  SD[name].log.unshift(`${ts} — LAP${ACTIVE_LAP} → ${level}`);
+  const lapLbl = getLapLabel(ACTIVE_LAP);
+  SD[name].log.unshift(`${ts} — ${lapLbl} → ${level}`);
   saveLocal();
   rerenderDesk(name);
   updateStats();
   if(PANEL_STUDENT===name) refreshPanel();
-  toast(`${name} · LAP${ACTIVE_LAP} → ${level}`);
+  snapshotStudentDay(name);
+  toast(`${name} · ${lapLbl} → ${level}`);
   pushToSheet(name);
 }
 
@@ -1543,6 +1751,23 @@ function updateStats(){
   document.getElementById('st-appr').textContent  = lapAll.filter(v=>v==='approaching').length;
   document.getElementById('st-emer').textContent  = lapAll.filter(v=>v==='emerging').length;
   document.getElementById('st-disc').textContent  = DISC_LINES.length;
+
+  // Update active-day pill
+  const pill = document.getElementById('st-day-pill');
+  if(pill){
+    if(ACTIVE_DAY){
+      pill.style.display = 'flex';
+      const dateEl = document.getElementById('st-day-date');
+      const lapsEl = document.getElementById('st-day-laps');
+      if(dateEl) dateEl.textContent = formatDate(ACTIVE_DAY.date);
+      if(lapsEl){
+        const active = ACTIVE_DAY.laps.filter(l=>l.active);
+        lapsEl.textContent = active.map(l=>`L${l.n}:${l.task||'—'}`).join(' · ');
+      }
+    } else {
+      pill.style.display = 'none';
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1579,11 +1804,18 @@ function refreshPanel(){
     <button class="btn btn-r" onclick="log1('${s.name}','coins',-1)">-🐉$1</button>
   `;
 
-  // LAP buttons highlight
+  // LAP buttons — show task names from active day
   [1,2,3].forEach(n=>{
     const b=document.getElementById(`lap${n}btn`);
+    if(!b) return;
     b.style.borderColor = n===ACTIVE_LAP ? 'var(--gold2)' : '';
     b.style.color       = n===ACTIVE_LAP ? 'var(--gold2)' : '';
+    b.textContent       = getLapLabel(n);
+    // Dim inactive LAPs if day is configured
+    if(ACTIVE_DAY){
+      const lapConfig = ACTIVE_DAY.laps[n-1];
+      b.style.opacity = (!lapConfig || !lapConfig.active) ? '0.4' : '1';
+    }
   });
 
   // Mastery display
@@ -2001,13 +2233,11 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
   canvas.height = H;
   ctx.clearRect(0, 0, W, H);
 
-  const wrap = document.getElementById(wrapId);
-
-  // ── Build a live pixel-center map — measured relative to THIS canvas element ──
+  // ── Build live pixel-center map relative to THIS canvas ──
   const centers = {};
   ROSTER.forEach(r => {
     const el = seatEls[r.name];
-    const c  = getSeatCenter(el, canvas);  // use canvas as reference, not wrap
+    const c  = getSeatCenter(el, canvas);
     if(c) centers[r.name] = c;
   });
 
@@ -2018,18 +2248,28 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
       const c = centers[r.name];
       const part = SD[r.name]?.participation || 0;
       if(!c || part === 0) return;
-      const radius = 20 + (part / maxPart) * 30;
-      const alpha  = 0.1 + (part / maxPart) * 0.25;
       ctx.beginPath();
-      ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(74,140,245,${alpha})`;
+      ctx.arc(c.x, c.y, 18 + (part/maxPart)*28, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(74,140,245,${0.08 + (part/maxPart)*0.2})`;
       ctx.fill();
     });
   }
 
-  // ── Draw lines using real element positions ──
+  // ── Count how many lines exist between each pair (for parallel offset) ──
+  const pairCount = {}; // key: "A|B" sorted
+  const pairIndex = {}; // index of each line in its pair
+  DISC_LINES.filter(l => l.from !== l.to).forEach(line => {
+    const key = [line.from, line.to].sort().join('|');
+    if(!pairCount[key]) pairCount[key] = 0;
+    pairIndex[line.turn] = pairCount[key];
+    pairCount[key]++;
+  });
+
+  // ── Draw lines per question thread ──
   QUESTIONS.forEach(q => {
     const qLines = DISC_LINES.filter(l => l.qid === q.id && l.from !== l.to);
+    const total  = qLines.length;
+
     qLines.forEach((line, i) => {
       const cF = centers[line.from];
       const cT = centers[line.to];
@@ -2037,61 +2277,85 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
 
       const x1 = cF.x, y1 = cF.y;
       const x2 = cT.x, y2 = cT.y;
+      const dx  = x2 - x1, dy = y2 - y1;
+      const len = Math.sqrt(dx*dx + dy*dy) || 1;
+      const nx  = -dy/len, ny = dx/len; // perpendicular unit vector
 
+      // Parallel offset — stagger repeated pairs so lines don't overlap
+      const pairKey   = [line.from, line.to].sort().join('|');
+      const pairTotal = pairCount[pairKey] || 1;
+      const pairIdx   = pairIndex[line.turn] || 0;
+      const offsetMag = (pairIdx - (pairTotal-1)/2) * 6; // spread by 6px per duplicate
+
+      // Arc direction: consistent for each pair (based on which name is alphabetically first)
+      // so A→B and B→A curve the same way, letting you see both directions
+      const pairSign = line.from < line.to ? 1 : -1;
+      const mx  = (x1+x2)/2 + nx * offsetMag;
+      const my  = (y1+y2)/2 + ny * offsetMag;
+      const curveMag = Math.min(len * 0.22, 55) * pairSign;
+      const cpx = mx + nx * curveMag;
+      const cpy = my + ny * curveMag;
+
+      // Fade in over the session — earlier turns slightly dimmer
+      const alpha = Math.min(.88, .35 + (i / Math.max(total, 1)) * .5);
       const qColor = q.color;
-      const alpha  = Math.min(.9, .3 + (i / Math.max(qLines.length, 1)) * .6);
 
       ctx.beginPath();
       ctx.strokeStyle = qColor;
       ctx.globalAlpha = alpha;
-      ctx.lineWidth   = line.type === 'build' ? 2.5 : 1.8;
-      ctx.setLineDash(line.type === 'build' ? [6,4] : line.type === 'question' ? [3,3] : []);
-
-      // Gentle arc — curve proportional to distance but capped small
-      const dx  = x2 - x1, dy = y2 - y1;
-      const len = Math.sqrt(dx*dx + dy*dy) || 1;
-      const mx  = (x1+x2)/2, my = (y1+y2)/2;
-      // Perpendicular offset — keep it subtle (max 40px)
-      const curve = Math.min(len * 0.18, 40);
-      const cpx = mx - (dy/len) * curve;
-      const cpy = my + (dx/len) * curve;
+      ctx.lineWidth   = line.type === 'build' ? 2.4 : 1.6;
+      ctx.setLineDash(
+        line.type === 'build'    ? [6,4] :
+        line.type === 'question' ? [3,3] :
+        line.type === 'challenge'? [8,3] : []
+      );
 
       ctx.moveTo(x1, y1);
       ctx.quadraticCurveTo(cpx, cpy, x2, y2);
       ctx.stroke();
-
-      // Arrowhead at destination
       ctx.setLineDash([]);
-      const t = .85;
+
+      // Arrowhead pointing at destination
+      const t = .84;
       const ax = (1-t)*(1-t)*x1 + 2*(1-t)*t*cpx + t*t*x2;
       const ay = (1-t)*(1-t)*y1 + 2*(1-t)*t*cpy + t*t*y2;
-      const angle = Math.atan2(y2 - ay, x2 - ax);
+      const angle = Math.atan2(y2-ay, x2-ax);
       const al = 9;
       ctx.beginPath();
       ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 - al*Math.cos(angle - .42), y2 - al*Math.sin(angle - .42));
-      ctx.lineTo(x2 - al*Math.cos(angle + .42), y2 - al*Math.sin(angle + .42));
+      ctx.lineTo(x2 - al*Math.cos(angle-.4), y2 - al*Math.sin(angle-.4));
+      ctx.lineTo(x2 - al*Math.cos(angle+.4), y2 - al*Math.sin(angle+.4));
       ctx.closePath();
       ctx.fillStyle = qColor;
-      ctx.globalAlpha = Math.min(alpha + .1, 1);
+      ctx.globalAlpha = Math.min(alpha+.1, 1);
       ctx.fill();
+
+      // Turn-order number at midpoint of arc — small, readable
+      const labelX = (0.25*x1 + 0.5*cpx + 0.25*x2);
+      const labelY = (0.25*y1 + 0.5*cpy + 0.25*y2);
+      ctx.globalAlpha = Math.min(alpha + 0.05, .9);
+      ctx.fillStyle = qColor;
+      ctx.font = 'bold 9px "DM Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(line.turn + 1, labelX, labelY);
       ctx.globalAlpha = 1;
     });
   });
 
-  // ── Small type-color dot at each speaker's seat ──
+  // ── Small type-color origin dot at each speaker seat ──
   DISC_LINES.filter(l => l.from !== l.to).forEach(line => {
     const c = centers[line.from];
     if(!c) return;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, 3.5, 0, Math.PI*2);
     ctx.fillStyle = TYPE_COLORS[line.type] || '#888';
-    ctx.globalAlpha = .65;
+    ctx.globalAlpha = .55;
     ctx.fill();
     ctx.globalAlpha = 1;
   });
 
-  // ── Turn counters + glow on seat elements ──
+  // ── Update turn counters + glow on seat DOM elements ──
   ROSTER.forEach(r => {
     const cnt   = DISC_LINES.filter(l => l.from === r.name).length;
     const cntEl = document.getElementById(wrapId + '-cnt-' + sid(r.name));
@@ -2265,11 +2529,14 @@ function parseCSV(csv){
 // PUSH single student — fires immediately on each button click
 // Uses Apps Script Web App (doPost) for authenticated writes
 async function pushToSheet(name){
-  if(!SCRIPT_URL) return; // silent if no URL configured
+  if(!SCRIPT_URL) return;
   const s = SD[name];
+  const lapLabels = ACTIVE_DAY
+    ? { lap1Label: ACTIVE_DAY.laps[0]?.task||'', lap2Label: ACTIVE_DAY.laps[1]?.task||'', lap3Label: ACTIVE_DAY.laps[2]?.task||'' }
+    : { lap1Label:'', lap2Label:'', lap3Label:'' };
   const payload = {
     action: 'upsert',
-    date:   TODAY,
+    date:   ACTIVE_DAY?.date || TODAY,
     name:   s.name,
     coins:  s.coins,
     participation: s.participation,
@@ -2278,15 +2545,15 @@ async function pushToSheet(name){
     lap1: s.mastery.lap1||'',
     lap2: s.mastery.lap2||'',
     lap3: s.mastery.lap3||'',
+    ...lapLabels,
   };
   try{
     await fetch(SCRIPT_URL,{
-      method:'POST',
-      mode:'no-cors', // Apps Script requires this from browser
+      method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload),
     });
-  }catch(e){ /* silent fail — data safe in localStorage */ }
+  }catch(e){}
 }
 
 // PUSH ALL — full batch push
@@ -2364,7 +2631,8 @@ function switchPage(id, btn){
   btn.classList.add('active');
   if(id==='disc')  setTimeout(()=>{positionDiscSeats();drawDiscLines();},50);
   if(id==='pulse') setTimeout(()=>renderPulse(),60);
-  if(id==='seats') setTimeout(()=>renderSeatEditor(),60);
+  if(id==='seats')   setTimeout(()=>renderSeatEditor(),60);
+  if(id==='newday')  setTimeout(()=>renderNewDayPage(),60);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2934,6 +3202,271 @@ function resetSeats(){
   if(!confirm('Reset seating to original layout?')) return;
   localStorage.removeItem('drexel_seats');
   location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW DAY SYSTEM
+// Stores day configs with per-LAP task names; data keyed by date;
+// pushes a new column-set to Sheets on each new day start.
+// ═══════════════════════════════════════════════════════════════════
+
+// Day record: {date, period, unit, laps:[{n,task,active}], startedAt}
+let DAY_HISTORY = [];       // array of day records, newest first
+let ACTIVE_DAY  = null;     // the current day record
+
+// Per-student daily records: { [date]: { lap1, lap2, lap3, participation, discussion, effort, coins } }
+// Already stored in SD[name].log but we also keep a structured daily snapshot
+let DAILY_DATA  = {};       // { [date]: { [name]: {lap1,lap2,lap3,participation,discussion,effort,coins} } }
+
+function loadDayHistory(){
+  const h = localStorage.getItem('drexel_day_history');
+  if(h) try{ DAY_HISTORY = JSON.parse(h); }catch(e){}
+  const a = localStorage.getItem('drexel_active_day');
+  if(a) try{ ACTIVE_DAY  = JSON.parse(a);  }catch(e){}
+  const d = localStorage.getItem('drexel_daily_data');
+  if(d) try{ DAILY_DATA  = JSON.parse(d);  }catch(e){}
+}
+function saveDayHistory(){
+  localStorage.setItem('drexel_day_history', JSON.stringify(DAY_HISTORY));
+  localStorage.setItem('drexel_active_day',  JSON.stringify(ACTIVE_DAY));
+  localStorage.setItem('drexel_daily_data',  JSON.stringify(DAILY_DATA));
+}
+
+// ── Render the New Day page ──────────────────────────────────────
+function renderNewDayPage(){
+  // Set date to today
+  const di = document.getElementById('ndDate');
+  if(di && !di.value) di.value = TODAY;
+
+  // Show/update current day banner
+  updateDayBanner();
+
+  // Pre-fill from active day if switching between days
+  if(ACTIVE_DAY){
+    if(di) di.value = ACTIVE_DAY.date;
+    const pi = document.getElementById('ndPeriodLabel');
+    if(pi) pi.value = ACTIVE_DAY.period || '';
+    const ui = document.getElementById('ndUnit');
+    if(ui) ui.value = ACTIVE_DAY.unit || '';
+    ACTIVE_DAY.laps.forEach((lap,i) => {
+      const n = i+1;
+      const ti = document.getElementById('ndLap'+n+'Task');
+      if(ti) ti.value = lap.task || '';
+      if(lap.active) toggleLapActive(n, true);
+    });
+  }
+
+  updateLapPreview();
+  renderDayHistory();
+}
+
+function updateDayBanner(){
+  const banner = document.getElementById('ndCurrentBanner');
+  if(!banner || !ACTIVE_DAY){ if(banner) banner.style.display='none'; return; }
+  banner.style.display = 'flex';
+  const dateEl = document.getElementById('ndBannerDate');
+  if(dateEl) dateEl.textContent = formatDate(ACTIVE_DAY.date);
+  const lapsEl = document.getElementById('ndBannerLaps');
+  if(lapsEl) lapsEl.innerHTML = ACTIVE_DAY.laps
+    .filter(l => l.active)
+    .map(l => `<span class="nd-hist-lap prof">LAP ${l.n}: ${l.task||'Unnamed'}</span>`)
+    .join('');
+}
+
+function toggleLapActive(n, forceOn){
+  const tog = document.getElementById('ndTog'+n);
+  const lbl = document.getElementById('ndTog'+n+'Label');
+  const blk = document.getElementById('ndLap'+n+'Block');
+  const num = document.getElementById('ndLap'+n+'Num');
+  if(!tog) return;
+  const isOn = forceOn !== undefined ? forceOn : !tog.classList.contains('on');
+  tog.classList.toggle('on', isOn);
+  if(lbl) lbl.textContent = isOn ? 'Active' : 'Off';
+  if(blk) blk.classList.toggle('active-lap', isOn);
+  if(num) num.classList.toggle('active', isOn);
+  updateLapPreview();
+}
+
+function updateLapPreview(){
+  const preview = document.getElementById('ndColPreview');
+  if(!preview) return;
+  const date = document.getElementById('ndDate')?.value || TODAY;
+  const parts = [date];
+  [1,2,3].forEach(n => {
+    if(document.getElementById('ndTog'+n)?.classList.contains('on')){
+      const task = document.getElementById('ndLap'+n+'Task')?.value || 'LAP '+n;
+      parts.push(`LAP${n}:${task}`);
+    }
+  });
+  parts.push('Part.','Disc.','Effort');
+  preview.textContent = parts.join(' | ');
+
+  // Also update LAP button labels in live tracker panel
+  updateLapButtonLabels();
+}
+
+function updateLapButtonLabels(){
+  if(!ACTIVE_DAY) return;
+  ACTIVE_DAY.laps.forEach((lap,i) => {
+    const n = i+1;
+    const btn = document.getElementById(`lap${n}btn`);
+    if(btn) btn.textContent = lap.active ? `LAP ${n}: ${lap.task||'—'}` : `LAP ${n}`;
+  });
+}
+
+// ── Start a new day — saves config, seeds data, pushes to Sheets ──
+function startNewDay(){
+  const date    = document.getElementById('ndDate')?.value || TODAY;
+  const period  = document.getElementById('ndPeriodLabel')?.value || '';
+  const unit    = document.getElementById('ndUnit')?.value || '';
+  const laps    = [1,2,3].map(n => ({
+    n,
+    task:   document.getElementById('ndLap'+n+'Task')?.value || '',
+    active: document.getElementById('ndTog'+n)?.classList.contains('on') || false,
+  }));
+
+  const activeLaps = laps.filter(l => l.active);
+  if(activeLaps.length === 0){
+    toast('⚠ Toggle at least one LAP active before starting'); return;
+  }
+
+  const dayRecord = { date, period, unit, laps, startedAt: Date.now() };
+  ACTIVE_DAY = dayRecord;
+
+  // Add to history (replace if same date)
+  DAY_HISTORY = DAY_HISTORY.filter(d => d.date !== date);
+  DAY_HISTORY.unshift(dayRecord);
+  if(DAY_HISTORY.length > 30) DAY_HISTORY.pop();
+
+  // Seed blank daily data for all students
+  if(!DAILY_DATA[date]) DAILY_DATA[date] = {};
+  ROSTER.forEach(r => {
+    if(!DAILY_DATA[date][r.name]){
+      DAILY_DATA[date][r.name] = {lap1:null,lap2:null,lap3:null,participation:0,discussion:0,effort:0,coins:0};
+    }
+  });
+
+  saveDayHistory();
+  updateDayBanner();
+  updateLapButtonLabels();
+  renderDayHistory();
+
+  // Push day config to Sheets
+  pushDaySetup(dayRecord);
+
+  toast(`✓ Day started: ${formatDate(date)} · ${activeLaps.length} LAP${activeLaps.length>1?'s':''} active`);
+
+  // Switch to live tracker
+  setTimeout(() => {
+    const heatBtn = document.querySelector('.ntab');
+    if(heatBtn) switchPage('heatmap', heatBtn);
+  }, 800);
+}
+
+// ── Save today's student mastery to the daily snapshot ────────────
+function snapshotStudentDay(name){
+  if(!ACTIVE_DAY) return;
+  const date = ACTIVE_DAY.date;
+  if(!DAILY_DATA[date]) DAILY_DATA[date] = {};
+  const s = SD[name];
+  DAILY_DATA[date][name] = {
+    lap1:          s.mastery.lap1 || null,
+    lap2:          s.mastery.lap2 || null,
+    lap3:          s.mastery.lap3 || null,
+    participation: s.participation,
+    discussion:    s.discussion,
+    effort:        s.effort,
+    coins:         s.coins,
+  };
+  saveDayHistory();
+}
+
+// ── Push day setup to Sheets (new column block per day) ───────────
+async function pushDaySetup(dayRecord){
+  if(!SCRIPT_URL) return;
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'new_day', day: dayRecord })
+    });
+  }catch(e){}
+}
+
+// ── Render day history list ────────────────────────────────────────
+function renderDayHistory(){
+  const wrap = document.getElementById('ndHistoryList');
+  if(!wrap) return;
+  if(!DAY_HISTORY.length){
+    wrap.innerHTML = '<div style="font-size:11px;color:var(--text3);font-style:italic;">No days recorded yet.</div>';
+    return;
+  }
+  wrap.innerHTML = DAY_HISTORY.map((d,i) => {
+    const isActive = ACTIVE_DAY?.date === d.date;
+    const activeLaps = d.laps.filter(l=>l.active);
+    const dayData = DAILY_DATA[d.date] || {};
+    const studentCount = Object.keys(dayData).length;
+    const profCount = Object.values(dayData).filter(v=>v.lap1==='proficient'||v.lap2==='proficient'||v.lap3==='proficient').length;
+    return `<div class="nd-history-row" onclick="restoreDay(${i})"
+      style="${isActive?'border-color:var(--green);background:rgba(46,204,138,.05);':''}">
+      <div class="nd-hist-date">${formatDate(d.date)}</div>
+      <div class="nd-hist-laps">
+        ${activeLaps.map(l=>`<span class="nd-hist-lap prof">LAP${l.n}: ${l.task||'Unnamed'}</span>`).join('')}
+        ${d.unit?`<span class="nd-hist-lap">${d.unit}</span>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-left:auto;white-space:nowrap;">
+        ${studentCount} students · ${profCount} prof.
+        ${isActive?'<span style="color:var(--green2);font-weight:700;margin-left:6px;">● ACTIVE</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restoreDay(i){
+  const d = DAY_HISTORY[i];
+  if(!d) return;
+  ACTIVE_DAY = d;
+  localStorage.setItem('drexel_active_day', JSON.stringify(ACTIVE_DAY));
+  updateDayBanner();
+  updateLapButtonLabels();
+  renderDayHistory();
+  // Pre-fill the form
+  const di = document.getElementById('ndDate'); if(di) di.value = d.date;
+  const pi = document.getElementById('ndPeriodLabel'); if(pi) pi.value = d.period||'';
+  const ui = document.getElementById('ndUnit'); if(ui) ui.value = d.unit||'';
+  d.laps.forEach((lap,idx) => {
+    const n = idx+1;
+    const ti = document.getElementById('ndLap'+n+'Task'); if(ti) ti.value = lap.task||'';
+    toggleLapActive(n, lap.active);
+  });
+  updateLapPreview();
+  toast(`Restored: ${formatDate(d.date)}`);
+}
+
+function formatDate(iso){
+  if(!iso) return '—';
+  try{
+    const d = new Date(iso+'T12:00:00');
+    return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  }catch(e){ return iso; }
+}
+
+// ── Weekly view helper — get all days in last 7 days ────────────
+function getWeekData(){
+  const out = [];
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-7);
+  DAY_HISTORY.forEach(d => {
+    if(new Date(d.date) >= cutoff) out.push({day:d, data: DAILY_DATA[d.date]||{}});
+  });
+  return out;
+}
+
+// ── Get LAP label for display (shows task name if set) ─────────────
+function getLapLabel(n){
+  if(!ACTIVE_DAY) return `LAP ${n}`;
+  const lap = ACTIVE_DAY.laps[n-1];
+  if(!lap || !lap.active) return `LAP ${n}`;
+  return lap.task ? `LAP ${n}: ${lap.task}` : `LAP ${n}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
