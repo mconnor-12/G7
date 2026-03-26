@@ -1402,22 +1402,22 @@ let DISC_FS_PENDING = null;
 // Edit this via the Seat Editor tab or directly here
 // Each column → clusters → rows of [name|null]
 let SEATING_LAYOUT = [
-  // LEFT col — back→front (top of screen = back of room)
+  // LEFT col — matches sheet LEFT (cols A-D): cl.8 back, cl.7 mid, cl.6 front-left
   { pt:0, clusters:[
-    { num:8, rows:[['Joshua','Aris'],['Logan',null]] },
-    { num:7, rows:[['Dasha','Wismarlin'],['Eli',null]] },
-    { num:6, rows:[['Osmari','Emily'],['Sarah','Zoey']] },
+    { num:8, rows:[['Joshua','Aris'],  ['Logan',null]] },
+    { num:7, rows:[['Emily','Dasha'],  ['Eli','Wismarlin']] },
+    { num:6, rows:[['Osmari',null],    ['Sarah','Zoey']] },
   ]},
-  // CENTER col
+  // CENTER col — matches sheet CENTER (cols G-J): cl.5 back, cl.4 front
   { pt:0, clusters:[
-    { num:5, rows:[['Samuel','Jazzia'],['Dashaun','Ambar']] },
-    { num:4, rows:[['Hector H','Derek'],['Hector T',null]] },
+    { num:5, rows:[['Samuel','Jazzia'],   ['Dashaun','Ambar']] },
+    { num:4, rows:[['Hector H','Derek'],  ['Hector T',null]] },
   ]},
-  // RIGHT col — John Thomas top-right corner
+  // RIGHT col — matches sheet RIGHT (cols M-P): cl.3 back, cl.2 mid, cl.1 front
   { pt:0, clusters:[
-    { num:3, rows:[['frank-Isaiah','John Thomas'],['Xavier',null]] },
-    { num:2, rows:[['Ethan','Derek P'],['Sophia U',null]] },
-    { num:1, rows:[['Saihana','Mike'],['Raynell L','Andry']] },
+    { num:3, rows:[['frank-Isaiah','John Thomas'], ['Xavier',null]] },
+    { num:2, rows:[['Ethan','Derek P'],            ['Sophia U',null]] },
+    { num:1, rows:[['Saihana','Mike'],             ['Raynell L','Andry']] },
   ]},
 ];
 
@@ -1503,6 +1503,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!ls || ls.slice(0,10) !== TODAY){ setTimeout(syncFromSheets, 1200); }
     else { setSyncPill(true, new Date(ls).toLocaleTimeString()); }
 
+    // Pull seating from Sheets on load if Script URL is configured (Sheets = source of truth)
+    if(SCRIPT_URL && SCRIPT_URL.includes('/exec')){
+      setTimeout(pullSeatingLayout, 2000);
+    }
+
     // Apply active day LAP labels to panel buttons
     setTimeout(updateLapButtonLabels, 100);
 
@@ -1514,14 +1519,16 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function loadLocal(){
+  // Student data — localStorage is a write-through cache; Sheets is source of truth
   const saved = localStorage.getItem('drexel_sd');
   if(saved){ try{ const p=JSON.parse(saved); ROSTER.forEach(r=>{ if(p[r.name]) Object.assign(SD[r.name],p[r.name]); }); }catch(e){} }
   const dl = localStorage.getItem('drexel_disclines');
   if(dl){ try{ DISC_LINES=JSON.parse(dl); DISC_TURN=DISC_LINES.length; }catch(e){} }
   const dq = localStorage.getItem('drexel_questions');
   if(dq){ try{ QUESTIONS=JSON.parse(dq); }catch(e){} }
-  const ds = localStorage.getItem('drexel_seats');
-  if(ds){ try{ SEATING_LAYOUT=JSON.parse(ds); computeLayoutFlat(); }catch(e){} }
+  // NOTE: Seating layout is NOT loaded from localStorage —
+  // it comes from the hardcoded SEATING_LAYOUT constant (synced with sheet).
+  // Use "Pull from Sheets" in Edit Seats or Push All to sync.
 }
 function saveLocal(){
   localStorage.setItem('drexel_sd', JSON.stringify(SD));
@@ -2423,52 +2430,6 @@ async function pushDiscLineToSheet(line){
   }catch(e){}
 }
 
-// ── Build both canvases on load ──
-function buildDiscSeats(){
-  // Tab canvas
-  discCanvasEl = document.getElementById('disc-canvas');
-  discCtx      = discCanvasEl.getContext('2d');
-  buildSeatSet('disc-seats', discSeatEls, discSeatClick);
-  positionDiscSeats();
-  window.addEventListener('resize', () => { positionDiscSeats(); drawDiscLines(); });
-  drawDiscLines();
-}
-
-function buildSeatSet(wrapId, elMap, clickFn){
-  const wrap = document.getElementById(wrapId);
-  wrap.innerHTML = '';
-  ROSTER.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'disc-seat';
-    div.id = wrapId + '-' + sid(r.name);
-    div.innerHTML = `<div class="ds-name">${r.name}</div><div class="ds-count" id="${wrapId}-cnt-${sid(r.name)}">0</div><div class="ds-tag">turns</div>`;
-    div.addEventListener('click', () => clickFn(r.name));
-    wrap.appendChild(div);
-    elMap[r.name] = div;
-  });
-}
-
-function positionDiscSeats(){
-  positionSeatSet('disc-seats', discSeatEls, 'discMapLeft');
-}
-function positionFsSeats(){
-  positionSeatSet('discFsSeats', discFsSeatEls, 'discFsWrap');
-}
-function positionSeatSet(wrapId, elMap, parentId){
-  const parent = document.getElementById(parentId || wrapId);
-  if(!parent) return;
-  const W = parent.offsetWidth || 800, H = parent.offsetHeight || 500;
-  const SEAT_W = 76, SEAT_H = 58; // approximate seat card dimensions
-  ROSTER.forEach(r => {
-    const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
-    const el  = elMap[r.name];
-    if(!el) return;
-    // Center the card on the fractional position
-    el.style.left = Math.round(pos.fx * W - SEAT_W / 2) + 'px';
-    el.style.top  = Math.round(pos.fy * H - SEAT_H / 2) + 'px';
-  });
-}
-
 // ═══════════════════════════════════════════════════════════════════
 // GOOGLE SHEETS SYNC
 // ═══════════════════════════════════════════════════════════════════
@@ -2589,24 +2550,38 @@ async function pushSeatingLayout(){
   }catch(e){}
 }
 
-// Pull seating layout from Sheets and rebuild
+// Pull seating layout from Sheets (source of truth) and rebuild all views
 async function pullSeatingLayout(){
-  if(!SCRIPT_URL){ toast('Configure Script URL first'); return; }
+  if(!SCRIPT_URL){ toast('⚠ Configure Script URL first'); return; }
+  showOverlay('Pulling seating layout…', 'Reading from Google Sheets');
   try{
-    const url = SCRIPT_URL.replace('/exec','') + '/exec?action=get_seating';
+    const url = SCRIPT_URL + '?action=get_seating';
     const r = await fetch(url, {cache:'no-cache'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const data = await r.json();
     if(data.layout){
-      SEATING_LAYOUT = JSON.parse(data.layout);
-      computeLayoutFlat();
-      localStorage.setItem('drexel_seats', JSON.stringify(SEATING_LAYOUT));
-      buildAllDesks(); rerenderDesks();
-      if(Object.keys(discSeatEls).length) buildDiscSeats();
-      toast('✓ Seating layout pulled from Sheets');
+      const parsed = JSON.parse(data.layout);
+      // Validate it looks like a seating layout
+      if(Array.isArray(parsed) && parsed.length > 0 && parsed[0].clusters){
+        SEATING_LAYOUT = parsed;
+        computeLayoutFlat();
+        buildAllDesks();
+        rerenderDesks();
+        if(Object.keys(discSeatEls).length) buildDiscSeats();
+        // Re-render seat editor if open
+        if(document.getElementById('page-seats')?.classList.contains('active')) renderSeatEditor();
+        hideOverlay();
+        toast('✓ Seating pulled from Sheets — all views updated');
+      } else {
+        throw new Error('Invalid layout data');
+      }
+    } else {
+      throw new Error('No layout in response');
     }
   }catch(e){
-    toast('⚠ Could not pull seating layout');
+    hideOverlay();
+    toast('⚠ Could not pull seating — check Script URL and sharing');
+    console.error('pullSeatingLayout:', e);
   }
 }
 
@@ -3038,10 +3013,7 @@ function renderSeatEditor(){
   const grid = document.getElementById('seatEditorGrid');
   if(!grid) return;
 
-  // Load saved layout from localStorage if present
-  const saved = localStorage.getItem('drexel_seats');
-  if(saved){ try{ SEATING_LAYOUT = JSON.parse(saved); computeLayoutFlat(); }catch(e){} }
-
+  // Use current SEATING_LAYOUT (set by code or pulled from Sheets — no localStorage)
   // Build who is in a seat already
   const assigned = new Set();
   SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl => cl.rows.forEach(row => row.forEach(n => { if(n) assigned.add(n); }))));
@@ -3170,7 +3142,6 @@ function addCluster(){
 
 function saveSeats(){
   // Update ROSTER to match new layout
-  const newOrder = [];
   const seen = new Set();
   SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl => {
     const clNum = cl.num;
@@ -3178,29 +3149,27 @@ function saveSeats(){
       if(name && !seen.has(name)){
         seen.add(name);
         const existing = ROSTER.find(r=>r.name===name);
-        newOrder.push({name, cluster: clNum || (existing?.cluster ?? null)});
       }
     }));
   }));
-  // Add any roster members not in layout
-  ROSTER.forEach(r => { if(!seen.has(r.name)) newOrder.push(r); });
 
-  // Save layout to localStorage
-  localStorage.setItem('drexel_seats', JSON.stringify(SEATING_LAYOUT));
   computeLayoutFlat();
 
-  // Rebuild all views
+  // Rebuild all views immediately
   buildAllDesks();
   rerenderDesks();
-  if(discSeatEls && Object.keys(discSeatEls).length > 0){
-    buildDiscSeats();
+  if(discSeatEls && Object.keys(discSeatEls).length > 0) buildDiscSeats();
+
+  // Push to Google Sheets (source of truth — no localStorage)
+  if(SCRIPT_URL){
+    pushSeatingLayout().then(() => toast('✓ Seating saved → Sheets + all views updated!'));
+  } else {
+    toast('✓ Layout updated locally — configure Script URL to save to Sheets');
   }
-  toast('✓ Seating saved — Heatmap + Discussion Map updated!');
 }
 
 function resetSeats(){
-  if(!confirm('Reset seating to original layout?')) return;
-  localStorage.removeItem('drexel_seats');
+  if(!confirm('Reset seating to the built-in default layout?')) return;
   location.reload();
 }
 
