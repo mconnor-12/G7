@@ -1970,41 +1970,61 @@ function drawFsLines(){
   drawOnCanvas(discFsCanvasEl, discFsCtx, W, H, discFsSeatEls, 'discFsSeats');
 }
 
+// ── Get the center pixel of a seat element relative to its canvas wrap ──
+function getSeatCenter(el, wrap){
+  if(!el || !wrap) return null;
+  const er = el.getBoundingClientRect();
+  const wr = wrap.getBoundingClientRect();
+  return {
+    x: er.left - wr.left + er.width  / 2,
+    y: er.top  - wr.top  + er.height / 2,
+  };
+}
+
 function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
   canvas.width  = W;
   canvas.height = H;
   ctx.clearRect(0, 0, W, H);
 
-  // Participation overlay — heat circles behind seats
+  const wrap = document.getElementById(wrapId);
+
+  // ── Build a live pixel-center map for every seat ──
+  const centers = {};
+  ROSTER.forEach(r => {
+    const el = seatEls[r.name];
+    const c  = getSeatCenter(el, wrap);
+    if(c) centers[r.name] = c;
+  });
+
+  // ── Participation overlay ──
   if(SHOW_PART_OVERLAY){
     const maxPart = Math.max(...ROSTER.map(r => SD[r.name]?.participation || 0), 1);
     ROSTER.forEach(r => {
-      const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
+      const c = centers[r.name];
       const part = SD[r.name]?.participation || 0;
-      if(part === 0) return;
-      const x = pos.fx * W, y = pos.fy * H;
+      if(!c || part === 0) return;
       const radius = 20 + (part / maxPart) * 30;
       const alpha  = 0.1 + (part / maxPart) * 0.25;
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(74,140,245,${alpha})`;
       ctx.fill();
     });
   }
 
-  // Draw lines grouped by question (so each Q thread looks coherent)
+  // ── Draw lines using real element positions ──
   QUESTIONS.forEach(q => {
     const qLines = DISC_LINES.filter(l => l.qid === q.id && l.from !== l.to);
     qLines.forEach((line, i) => {
-      const posF = SEATING_LAYOUT_FLAT[line.from] || getDefaultPos(line.from);
-      const posT = SEATING_LAYOUT_FLAT[line.to]   || getDefaultPos(line.to);
-      const x1 = posF.fx * W, y1 = posF.fy * H;
-      const x2 = posT.fx * W, y2 = posT.fy * H;
+      const cF = centers[line.from];
+      const cT = centers[line.to];
+      if(!cF || !cT) return;
 
-      // Line color: blend question thread color with type color
-      const qColor  = q.color;
-      const typeAlpha = 0.6;
-      const alpha = Math.min(.9, .25 + (i / Math.max(qLines.length, 1)) * .65);
+      const x1 = cF.x, y1 = cF.y;
+      const x2 = cT.x, y2 = cT.y;
+
+      const qColor = q.color;
+      const alpha  = Math.min(.9, .3 + (i / Math.max(qLines.length, 1)) * .6);
 
       ctx.beginPath();
       ctx.strokeStyle = qColor;
@@ -2012,29 +2032,30 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
       ctx.lineWidth   = line.type === 'build' ? 2.5 : 1.8;
       ctx.setLineDash(line.type === 'build' ? [6,4] : line.type === 'question' ? [3,3] : []);
 
-      // Bezier arc
-      const mx = (x1+x2)/2, my = (y1+y2)/2;
-      const dx = x2-x1, dy = y2-y1;
-      const len = Math.sqrt(dx*dx+dy*dy) || 1;
-      const curve = Math.min(len * .4, 100);
-      const cpx = mx - dy/len * curve;
-      const cpy = my + dx/len * curve;
+      // Gentle arc — curve proportional to distance but capped small
+      const dx  = x2 - x1, dy = y2 - y1;
+      const len = Math.sqrt(dx*dx + dy*dy) || 1;
+      const mx  = (x1+x2)/2, my = (y1+y2)/2;
+      // Perpendicular offset — keep it subtle (max 40px)
+      const curve = Math.min(len * 0.18, 40);
+      const cpx = mx - (dy/len) * curve;
+      const cpy = my + (dx/len) * curve;
 
       ctx.moveTo(x1, y1);
       ctx.quadraticCurveTo(cpx, cpy, x2, y2);
       ctx.stroke();
 
-      // Arrowhead
+      // Arrowhead at destination
       ctx.setLineDash([]);
-      const t = .82;
+      const t = .85;
       const ax = (1-t)*(1-t)*x1 + 2*(1-t)*t*cpx + t*t*x2;
       const ay = (1-t)*(1-t)*y1 + 2*(1-t)*t*cpy + t*t*y2;
-      const angle = Math.atan2(y2-ay, x2-ax);
-      const al = 10;
+      const angle = Math.atan2(y2 - ay, x2 - ax);
+      const al = 9;
       ctx.beginPath();
       ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 - al*Math.cos(angle-.45), y2 - al*Math.sin(angle-.45));
-      ctx.lineTo(x2 - al*Math.cos(angle+.45), y2 - al*Math.sin(angle+.45));
+      ctx.lineTo(x2 - al*Math.cos(angle - .42), y2 - al*Math.sin(angle - .42));
+      ctx.lineTo(x2 - al*Math.cos(angle + .42), y2 - al*Math.sin(angle + .42));
       ctx.closePath();
       ctx.fillStyle = qColor;
       ctx.globalAlpha = Math.min(alpha + .1, 1);
@@ -2043,21 +2064,21 @@ function drawOnCanvas(canvas, ctx, W, H, seatEls, wrapId){
     });
   });
 
-  // Draw type-colored dot at start of each line
-  DISC_LINES.filter(l=>l.from!==l.to).forEach(line => {
-    const pos = SEATING_LAYOUT_FLAT[line.from] || getDefaultPos(line.from);
-    const x = pos.fx * W, y = pos.fy * H;
+  // ── Small type-color dot at each speaker's seat ──
+  DISC_LINES.filter(l => l.from !== l.to).forEach(line => {
+    const c = centers[line.from];
+    if(!c) return;
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
     ctx.fillStyle = TYPE_COLORS[line.type] || '#888';
-    ctx.globalAlpha = .7;
+    ctx.globalAlpha = .65;
     ctx.fill();
     ctx.globalAlpha = 1;
   });
 
-  // Turn counters on seats
+  // ── Turn counters + glow on seat elements ──
   ROSTER.forEach(r => {
-    const cnt = DISC_LINES.filter(l => l.from === r.name).length;
+    const cnt   = DISC_LINES.filter(l => l.from === r.name).length;
     const cntEl = document.getElementById(wrapId + '-cnt-' + sid(r.name));
     if(cntEl) cntEl.textContent = cnt;
     const el = seatEls[r.name];
