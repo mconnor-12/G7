@@ -1220,32 +1220,40 @@ let SEATING_LAYOUT = [
 ];
 
 // Flat map: name → {fx, fy} fractional positions for canvas drawing
-let SEATING_LAYOUT_FLAT = Object.assign({}, DISC_POSITIONS_SEED); // seed with known coords
+// Computed entirely from SEATING_LAYOUT — no hardcoded seed coords needed
+let SEATING_LAYOUT_FLAT = {};
 function computeLayoutFlat(){
-  // Start from known seed coords, then overlay with computed grid positions
-  SEATING_LAYOUT_FLAT = Object.assign({}, DISC_POSITIONS_SEED);
-  const cols = SEATING_LAYOUT.length;
-  // Count total cluster rows per column to know total height
+  SEATING_LAYOUT_FLAT = {};
+  const cols     = SEATING_LAYOUT.length;
+  // Margins: keep seats well within canvas so nothing clips
+  const xPad     = 0.06;  // 6% margin each side
+  const yPad     = 0.05;  // 5% margin top/bottom
+  const xUsable  = 1 - xPad * 2;
+  const yUsable  = 1 - yPad * 2;
+
   SEATING_LAYOUT.forEach((col, ci) => {
-    const fx_base = 0.12 + ci * (0.76 / Math.max(cols - 1, 1));
-    // Count total rows in this column to normalize fy
-    let totalRows = 0;
-    col.clusters.forEach(cl => { totalRows += cl.rows.length + 1; }); // +1 for cluster gap
-    let rowIdx = 0;
-    col.clusters.forEach(cl => {
-      rowIdx++; // cluster badge row
+    // fx_center for this column
+    const fx_center = xPad + (ci + 0.5) * (xUsable / cols);
+
+    // Count total row slots in this column
+    let totalSlots = 0;
+    col.clusters.forEach(cl => { totalSlots += cl.rows.length + 0.5; }); // 0.5 gap per cluster
+
+    let slotIdx = 0;
+    col.clusters.forEach((cl, cli) => {
+      if(cli > 0) slotIdx += 0.5; // gap between clusters
       cl.rows.forEach(row => {
+        const fy = yPad + (slotIdx / Math.max(totalSlots, 1)) * yUsable;
         row.forEach((name, ri) => {
           if(!name) return;
-          const offset = (ri === 0 ? -0.09 : 0.09);
-          // fy: 0=top(back of room), 1=bottom(front) — rowIdx/totalRows gives top→bottom
-          const fy_raw = rowIdx / Math.max(totalRows, 1);
+          // Left desk slightly left of center, right desk slightly right
+          const xOffset = (ri === 0 ? -0.5 : 0.5) * (xUsable / cols) * 0.38;
           SEATING_LAYOUT_FLAT[name] = {
-            fx: Math.max(.05, Math.min(.95, fx_base + offset)),
-            fy: Math.max(.06, Math.min(.93, fy_raw))
+            fx: Math.max(xPad, Math.min(1 - xPad, fx_center + xOffset)),
+            fy: Math.max(yPad, Math.min(1 - yPad, fy))
           };
         });
-        rowIdx++;
+        slotIdx++;
       });
     });
   });
@@ -1726,12 +1734,14 @@ function positionSeatSet(wrapId, elMap, parentId){
   const parent = document.getElementById(parentId || wrapId);
   if(!parent) return;
   const W = parent.offsetWidth || 800, H = parent.offsetHeight || 500;
+  const SEAT_W = 76, SEAT_H = 58; // approximate seat card dimensions
   ROSTER.forEach(r => {
     const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
     const el  = elMap[r.name];
     if(!el) return;
-    el.style.left = (pos.fx * W - 36) + 'px';
-    el.style.top  = (pos.fy * H - 28) + 'px';
+    // Center the card on the fractional position
+    el.style.left = Math.round(pos.fx * W - SEAT_W / 2) + 'px';
+    el.style.top  = Math.round(pos.fy * H - SEAT_H / 2) + 'px';
   });
 }
 
@@ -1972,11 +1982,17 @@ function drawFsLines(){
 function getSeatCenter(el, canvasEl){
   if(!el || !canvasEl) return null;
   const er = el.getBoundingClientRect();
-  const cr = canvasEl.getBoundingClientRect();
-  if(cr.width === 0 || cr.height === 0) return null;
+  // Use canvas parent if canvas hasn't painted yet (zero size)
+  let ref = canvasEl.getBoundingClientRect();
+  if(ref.width === 0) ref = (canvasEl.parentElement || canvasEl).getBoundingClientRect();
+  if(ref.width === 0) return null;
+  const x = er.left - ref.left + er.width  / 2;
+  const y = er.top  - ref.top  + er.height / 2;
+  // Clamp to canvas bounds with a small margin
+  const margin = 8;
   return {
-    x: er.left - cr.left + er.width  / 2,
-    y: er.top  - cr.top  + er.height / 2,
+    x: Math.max(margin, Math.min(ref.width  - margin, x)),
+    y: Math.max(margin, Math.min(ref.height - margin, y)),
   };
 }
 
@@ -2178,12 +2194,14 @@ function positionSeatSet(wrapId, elMap, parentId){
   const parent = document.getElementById(parentId || wrapId);
   if(!parent) return;
   const W = parent.offsetWidth || 800, H = parent.offsetHeight || 500;
+  const SEAT_W = 76, SEAT_H = 58; // approximate seat card dimensions
   ROSTER.forEach(r => {
     const pos = SEATING_LAYOUT_FLAT[r.name] || getDefaultPos(r.name);
     const el  = elMap[r.name];
     if(!el) return;
-    el.style.left = (pos.fx * W - 36) + 'px';
-    el.style.top  = (pos.fy * H - 28) + 'px';
+    // Center the card on the fractional position
+    el.style.left = Math.round(pos.fx * W - SEAT_W / 2) + 'px';
+    el.style.top  = Math.round(pos.fy * H - SEAT_H / 2) + 'px';
   });
 }
 
