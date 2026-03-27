@@ -1152,26 +1152,159 @@ select:focus,input:focus{outline:none;border-color:var(--blue);}
 
 <!-- ══ PAGE: SEAT EDITOR ══════════════════════════════════════════ -->
 <div class="page" id="page-seats">
-  <div class="pulse-toolbar">
+
+  <!-- toolbar -->
+  <div class="pulse-toolbar" style="flex-wrap:wrap;gap:6px;">
     <span class="pulse-toolbar-title" style="color:var(--amber2);">✏️ SEATING EDITOR</span>
     <div class="divider"></div>
-    <span style="font-size:10px;color:var(--text2);">Drag names between desks · Changes apply to Live Tracker + Discussion Map instantly</span>
-    <div style="margin-left:auto;display:flex;gap:6px;">
-      <button class="btn" onclick="addCluster()">+ Cluster</button>
-      <button class="btn btn-b" onclick="pullSeatingLayout()">↓ Pull from Sheets</button>
-      <button class="btn btn-g" onclick="saveSeats()">✓ Save Layout</button>
-      <button class="btn btn-r" onclick="resetSeats()">↺ Reset</button>
+    <!-- Homeroom filter -->
+    <span style="font-size:10px;color:var(--text2);">Class:</span>
+    <select id="seHomeroomFilter" style="font-size:10px;" onchange="seFilterHomeroom(this.value)">
+      <option value="all">All Students</option>
+    </select>
+    <button class="btn" style="font-size:9px;padding:2px 7px;" onclick="seManageHomerooms()" title="Add/edit homerooms">⚙</button>
+    <div class="divider"></div>
+    <button class="btn" onclick="seShowFormationWizard()" title="Generate a fresh layout from scratch">🔧 New Formation</button>
+    <button class="btn" onclick="seAddColumn()">+ Column</button>
+    <button class="btn" onclick="seShowAddStudent()">+ Student</button>
+    <button class="btn btn-b" onclick="pullSeatingLayout()">↓ Pull Sheets</button>
+    <button class="btn btn-g" onclick="saveSeats()">✓ Save</button>
+    <button class="btn btn-r" onclick="resetSeats()">↺ Reset</button>
+  </div>
+
+  <!-- Formation wizard overlay -->
+  <div id="seFormationWizard" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);
+    background:var(--bg2);border:1px solid var(--border2);border-radius:10px;
+    padding:20px 24px;z-index:300;width:420px;box-shadow:0 8px 40px rgba(0,0,0,.6);">
+    <div style="font-size:13px;font-weight:800;color:var(--amber2);font-family:'Syne',sans-serif;margin-bottom:14px;">🔧 New Formation</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--border2);flex:1;justify-content:center;"
+        id="fmtGroupLabel" onclick="setFormationType('groups')">
+        <input type="radio" name="fmtType" value="groups" style="display:none;"> 🔲 Groups / Clusters
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--border2);flex:1;justify-content:center;"
+        id="fmtRowsLabel" onclick="setFormationType('rows')">
+        <input type="radio" name="fmtType" value="rows" style="display:none;"> ☰ Rows
+      </label>
+    </div>
+    <!-- Groups config -->
+    <div id="fmtGroupsConfig">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Columns (side by side)</div>
+          <input type="number" id="fmtCols" value="3" min="1" max="6" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Groups per column</div>
+          <input type="number" id="fmtGroupsPerCol" value="3" min="1" max="10" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Desks per group row</div>
+          <input type="number" id="fmtDesksPerRow" value="2" min="1" max="4" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Rows per group</div>
+          <input type="number" id="fmtRowsPerGroup" value="2" min="1" max="6" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+      </div>
+    </div>
+    <!-- Rows config -->
+    <div id="fmtRowsConfig" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Number of columns</div>
+          <input type="number" id="fmtRowCols" value="3" min="1" max="8" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Rows per column</div>
+          <input type="number" id="fmtRowCount" value="6" min="1" max="12" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">Seats per row</div>
+          <input type="number" id="fmtSeatsPerRow" value="2" min="1" max="4" class="nd-input" style="width:100%;padding:5px 8px;">
+        </div>
+      </div>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-bottom:12px;" id="fmtPreviewLabel">Preview: 3 cols × 3 groups × 2 rows × 2 desks = 36 desk slots</div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-g" style="flex:1;" onclick="seApplyFormation()">✓ Generate Layout</button>
+      <button class="btn" onclick="document.getElementById('seFormationWizard').style.display='none'">Cancel</button>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:8px;">⚠ This replaces the current layout. Students move to the pool.</div>
+  </div>
+
+  <!-- Homeroom manager overlay -->
+  <div id="seHomeroomManager" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);
+    background:var(--bg2);border:1px solid var(--border2);border-radius:10px;
+    padding:20px 24px;z-index:300;width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.6);">
+    <div style="font-size:13px;font-weight:800;color:var(--teal2);font-family:'Syne',sans-serif;margin-bottom:12px;">📚 Manage Classes / Homerooms</div>
+    <div id="seHomeroomList" style="display:flex;flex-direction:column;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;">
+      <input id="seNewHomeroom" type="text" placeholder="New class name (e.g. Period 3)" class="nd-input" style="flex:1;padding:5px 10px;font-size:11px;"
+        onkeydown="if(event.key==='Enter')seAddHomeroom()">
+      <button class="btn btn-teal" onclick="seAddHomeroom()">+ Add Class</button>
+    </div>
+    <button class="btn" style="width:100%;" onclick="document.getElementById('seHomeroomManager').style.display='none'">Done</button>
+  </div>
+
+  <!-- Add student form -->
+  <div id="seAddStudentForm" style="display:none;background:var(--bg2);border-bottom:1px solid var(--border2);padding:10px 16px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:10px;font-weight:700;color:var(--amber2);">New Student:</span>
+      <input id="seNewName" type="text" placeholder="Name" class="nd-input" style="width:150px;padding:5px 10px;font-size:11px;"
+        onkeydown="if(event.key==='Enter')seCommitAddStudent()">
+      <select id="seNewHomeroom2" class="nd-input" style="font-size:11px;padding:5px 10px;">
+        <option value="">Class / Homeroom</option>
+      </select>
+      <input id="seNewCluster" type="number" placeholder="Cluster #" class="nd-input" style="width:80px;padding:5px 10px;font-size:11px;">
+      <button class="btn btn-g" onclick="seCommitAddStudent()">+ Add</button>
+      <button class="btn" onclick="document.getElementById('seAddStudentForm').style.display='none'">✕</button>
     </div>
   </div>
-  <div style="padding:16px;">
-    <div id="seatEditorGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;"></div>
-    <!-- Unassigned students pool -->
-    <div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px;">
-      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:8px;">
-        Unassigned / Pool
+
+  <!-- Split pane: left=floor plan, right=student panel -->
+  <div style="display:flex;height:calc(100vh - 115px);overflow:hidden;">
+
+    <!-- Left: seating floor plan -->
+    <div style="flex:1;overflow:auto;padding:14px;min-width:0;">
+      <!-- Column label strip -->
+      <div id="seColControls" style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;"></div>
+      <!-- Grid -->
+      <div id="seatEditorGrid" style="display:flex;gap:14px;align-items:start;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;min-height:200px;"></div>
+      <!-- Front banner -->
+      <div style="margin-top:12px;background:var(--goldbg);border:1px solid rgba(240,180,41,.25);border-radius:6px;
+        padding:7px;text-align:center;font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.04em;">
+        ▼ FRONT OF ROOM
       </div>
-      <div id="seatPool" style="display:flex;flex-wrap:wrap;gap:6px;min-height:36px;"></div>
     </div>
+
+    <!-- Right: student panel (always visible) -->
+    <div id="seStudentPanel" style="width:200px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border2);
+      display:flex;flex-direction:column;overflow:hidden;">
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border2);">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;">Students</div>
+        <input id="seStudentSearch" type="text" placeholder="Search…" class="nd-input"
+          style="width:100%;padding:4px 8px;font-size:10px;" oninput="renderSeatEditor()">
+      </div>
+      <!-- Unassigned pool -->
+      <div style="flex:1;overflow-y:auto;padding:10px;">
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;">Unassigned — drag to seat</div>
+        <div id="seatPool" style="display:flex;flex-direction:column;gap:5px;min-height:40px;"
+          ondragover="event.preventDefault();this.style.background='rgba(46,204,138,.08)'"
+          ondragleave="this.style.background=''"
+          ondrop="seDropToPool(event);this.style.background=''"></div>
+        <div style="margin-top:14px;font-size:9px;color:var(--text3);border-top:1px solid var(--border);padding-top:8px;">All students</div>
+        <div id="seAllStudentsList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px;"></div>
+      </div>
+      <!-- Remove student -->
+      <div style="padding:8px 10px;border-top:1px solid var(--border2);">
+        <select id="seRemoveSelect" class="nd-input" style="width:100%;font-size:10px;padding:3px 6px;margin-bottom:5px;">
+          <option value="">Select to remove…</option>
+        </select>
+        <button class="btn btn-r" style="width:100%;font-size:10px;" onclick="seCommitRemoveStudent()">− Remove Student</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1355,15 +1488,19 @@ const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?form
 const TODAY    = new Date().toISOString().slice(0,10);
 
 const ROSTER = [
-  {name:'Joshua',       cluster:8}, {name:'Aris',         cluster:8}, {name:'Logan',        cluster:8},
-  {name:'Dasha',        cluster:7}, {name:'Wismarlin',    cluster:7}, {name:'Eli',          cluster:7},
-  {name:'Osmari',       cluster:6}, {name:'Emily',        cluster:6}, {name:'Sarah',        cluster:6}, {name:'Zoey',         cluster:6},
-  {name:'Samuel',       cluster:5}, {name:'Jazzia',       cluster:5}, {name:'Dashaun',      cluster:5}, {name:'Ambar',        cluster:5},
-  {name:'Hector H',     cluster:4}, {name:'Derek',        cluster:4}, {name:'Hector T',     cluster:4},
-  {name:'frank-Isaiah', cluster:3}, {name:'John Thomas',  cluster:3}, {name:'Xavier',       cluster:3},
-  {name:'Ethan',        cluster:2}, {name:'Derek P',      cluster:2}, {name:'Sophia U',     cluster:2},
-  {name:'Saihana',      cluster:1}, {name:'Mike',         cluster:1}, {name:'Raynell L',    cluster:1}, {name:'Andry',        cluster:1},
+  {name:'Joshua',       cluster:8, homeroom:'G7 SS'}, {name:'Aris',         cluster:8, homeroom:'G7 SS'}, {name:'Logan',        cluster:8, homeroom:'G7 SS'},
+  {name:'Dasha',        cluster:7, homeroom:'G7 SS'}, {name:'Wismarlin',    cluster:7, homeroom:'G7 SS'}, {name:'Eli',          cluster:7, homeroom:'G7 SS'},
+  {name:'Osmari',       cluster:6, homeroom:'G7 SS'}, {name:'Emily',        cluster:6, homeroom:'G7 SS'}, {name:'Sarah',        cluster:6, homeroom:'G7 SS'}, {name:'Zoey', cluster:6, homeroom:'G7 SS'},
+  {name:'Samuel',       cluster:5, homeroom:'G7 SS'}, {name:'Jazzia',       cluster:5, homeroom:'G7 SS'}, {name:'Dashaun',      cluster:5, homeroom:'G7 SS'}, {name:'Ambar', cluster:5, homeroom:'G7 SS'},
+  {name:'Hector H',     cluster:4, homeroom:'G7 SS'}, {name:'Derek',        cluster:4, homeroom:'G7 SS'}, {name:'Hector T',     cluster:4, homeroom:'G7 SS'},
+  {name:'frank-Isaiah', cluster:3, homeroom:'G7 SS'}, {name:'John Thomas',  cluster:3, homeroom:'G7 SS'}, {name:'Xavier',       cluster:3, homeroom:'G7 SS'},
+  {name:'Ethan',        cluster:2, homeroom:'G7 SS'}, {name:'Derek P',      cluster:2, homeroom:'G7 SS'}, {name:'Sophia U',     cluster:2, homeroom:'G7 SS'},
+  {name:'Saihana',      cluster:1, homeroom:'G7 SS'}, {name:'Mike',         cluster:1, homeroom:'G7 SS'}, {name:'Raynell L',    cluster:1, homeroom:'G7 SS'}, {name:'Andry', cluster:1, homeroom:'G7 SS'},
 ];
+
+// ── Homerooms / classes ──
+let HOMEROOMS         = ['G7 SS'];  // list of class names
+let ACTIVE_HOMEROOM   = 'all';      // 'all' or a homeroom name
 
 // ── Seed flat positions — fy: 0=top(back of room) 1=bottom(front) ──
 const DISC_POSITIONS_SEED = {
@@ -3090,136 +3227,478 @@ function exportPulseCSV(){
 // re-renders heatmap + discussion map automatically.
 // ═══════════════════════════════════════════════════════════════════
 let SE_DRAG_NAME = null;
+let SE_FORMATION_TYPE = 'groups';
+
+// ═══════════════════════════════════════════════════════════════════
+// SEAT EDITOR — complete redesign
+// ═══════════════════════════════════════════════════════════════════
 
 function renderSeatEditor(){
   const grid = document.getElementById('seatEditorGrid');
   if(!grid) return;
 
-  // Use current SEATING_LAYOUT (set by code or pulled from Sheets — no localStorage)
-  // Build who is in a seat already
-  const assigned = new Set();
-  SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl => cl.rows.forEach(row => row.forEach(n => { if(n) assigned.add(n); }))));
+  const search = (document.getElementById('seStudentSearch')?.value||'').toLowerCase();
+  const filterHr = ACTIVE_HOMEROOM;
 
-  // Unassigned pool
+  // Who's in a seat
+  const assigned = new Set();
+  SEATING_LAYOUT.forEach(col => col.clusters.forEach(cl =>
+    cl.rows.forEach(row => row.forEach(n => { if(n) assigned.add(n); }))
+  ));
+
+  // Visible roster (filtered by homeroom)
+  const visibleRoster = ROSTER.filter(r =>
+    (filterHr === 'all' || r.homeroom === filterHr) &&
+    (!search || r.name.toLowerCase().includes(search))
+  );
+
+  // ── Student panel: unassigned pool ──
   const pool = document.getElementById('seatPool');
   if(pool){
-    pool.innerHTML = ROSTER.filter(r=>!assigned.has(r.name)).map(r =>
-      `<div class="se-name-chip" draggable="true"
-        ondragstart="seDragStart('${r.name}',event)"
-        ondragend="seDragEnd(event)">${r.name}</div>`
+    const unassigned = visibleRoster.filter(r => !assigned.has(r.name));
+    pool.innerHTML = unassigned.length
+      ? unassigned.map(r => sePillHTML(r.name, r.homeroom)).join('')
+      : '<span style="font-size:9px;color:var(--text3);font-style:italic;">All seated ✓</span>';
+  }
+
+  // ── Student panel: all students list (for overview) ──
+  const allList = document.getElementById('seAllStudentsList');
+  if(allList){
+    allList.innerHTML = visibleRoster.map(r => {
+      const inSeat = assigned.has(r.name);
+      const hrColor = r.homeroom ? 'var(--teal2)' : 'var(--text3)';
+      return `<div style="font-size:9px;padding:2px 3px;border-radius:3px;${inSeat?'opacity:.55':''}">
+        <div style="display:flex;align-items:center;gap:3px;margin-bottom:1px;">
+          <span style="width:5px;height:5px;border-radius:50%;background:${inSeat?'var(--green)':'var(--amber)'};flex-shrink:0;"></span>
+          <span style="font-weight:${inSeat?'400':'700'};color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.name}">${r.name}</span>
+        </div>
+        <select onchange="seAssignHomeroom('${r.name}',this.value)"
+          style="width:100%;font-size:8px;background:var(--bg4);border:1px solid var(--border);color:${hrColor};border-radius:3px;padding:1px 2px;margin-top:1px;">
+          <option value="">— no class —</option>
+          ${HOMEROOMS.map(h=>`<option value="${h}" ${r.homeroom===h?'selected':''}>${h}</option>`).join('')}
+        </select>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Remove select ──
+  const remSel = document.getElementById('seRemoveSelect');
+  if(remSel){
+    remSel.innerHTML = '<option value="">Select to remove…</option>' +
+      ROSTER.map(r=>`<option value="${r.name}">${r.name}${r.homeroom?' ('+r.homeroom+')':''}</option>`).join('');
+  }
+
+  // ── Homeroom filter dropdown ──
+  seRefreshHomeroomDropdown();
+
+  // ── Column label strip ──
+  const colCtrl = document.getElementById('seColControls');
+  if(colCtrl){
+    colCtrl.innerHTML = SEATING_LAYOUT.map((col,ci) => `
+      <div style="display:flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:2px 7px;">
+        <input value="${col.label||'Col '+(ci+1)}" style="background:transparent;border:none;color:var(--amber2);font-size:10px;font-weight:700;width:60px;outline:none;cursor:text;"
+          onchange="SEATING_LAYOUT[${ci}].label=this.value">
+        <button style="background:none;border:none;color:var(--red2);cursor:pointer;font-size:12px;font-weight:700;padding:0 2px;line-height:1;"
+          onclick="seRemoveColumn(${ci})" title="Delete column ${ci+1}">✕</button>
+      </div>`
     ).join('');
   }
 
-  // Cluster grid
+  // ── Main floor plan ──
   grid.innerHTML = '';
   SEATING_LAYOUT.forEach((col, ci) => {
+    const colWrap = document.createElement('div');
+    colWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:180px;max-width:260px;flex:1;';
+
     col.clusters.forEach((cl, cli) => {
       const card = document.createElement('div');
       card.className = 'se-cluster';
-      const numId = `cl-num-${ci}-${cli}`;
-      card.innerHTML = `
-        <div class="se-cluster-header">
-          <span style="font-size:9px;color:var(--text3);">Cluster</span>
-          <input class="se-cluster-num-input" id="${numId}" value="${cl.num||''}"
-            onchange="SEATING_LAYOUT[${ci}].clusters[${cli}].num=parseInt(this.value)||null"
-            placeholder="—">
+
+      // Cluster header
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;gap:5px;justify-content:space-between;margin-bottom:6px;';
+      hdr.innerHTML = `
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-size:8px;color:var(--text3);">#</span>
+          <input class="se-cluster-num-input" value="${cl.num||''}" placeholder="—"
+            style="width:32px;" title="Cluster number"
+            onchange="SEATING_LAYOUT[${ci}].clusters[${cli}].num=parseInt(this.value)||null;">
+        </div>
+        <div style="display:flex;gap:3px;">
+          <button class="btn" style="font-size:8px;padding:1px 6px;" onclick="seAddRow(${ci},${cli})">+row</button>
+          <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0;"
+            onclick="seRemoveCluster(${ci},${cli})" title="Remove cluster">✕</button>
         </div>`;
+      card.appendChild(hdr);
+
+      // Rows
       cl.rows.forEach((row, ri) => {
-        const pair = document.createElement('div');
-        pair.className = 'se-pair';
+        const rowDiv = document.createElement('div');
+        rowDiv.style.cssText = 'display:flex;gap:3px;align-items:stretch;margin-bottom:3px;';
+
         row.forEach((name, di) => {
-          const deskId = `sed-${ci}-${cli}-${ri}-${di}`;
-          const deskDiv = document.createElement('div');
-          deskDiv.className = 'se-desk';
-          deskDiv.id = deskId;
-          deskDiv.setAttribute('data-ci', ci);
-          deskDiv.setAttribute('data-cli', cli);
-          deskDiv.setAttribute('data-ri', ri);
-          deskDiv.setAttribute('data-di', di);
-          deskDiv.ondragover = e => { e.preventDefault(); deskDiv.classList.add('drag-over'); };
-          deskDiv.ondragleave = () => deskDiv.classList.remove('drag-over');
-          deskDiv.ondrop = e => seDropOnDesk(e, ci, cli, ri, di);
+          const desk = document.createElement('div');
+          const isLeft = di === 0;
+          desk.className = 'se-desk';
+          desk.style.cssText = `flex:1;min-width:0;position:relative;
+            ${isLeft ? 'border-left:3px solid rgba(74,140,245,.5);' : 'border-right:3px solid rgba(240,180,41,.5);'}`;
+          desk.ondragover  = e => { e.preventDefault(); desk.style.background = 'rgba(46,204,138,.1)'; };
+          desk.ondragleave = ()=> { desk.style.background = ''; };
+          desk.ondrop      = e => seDropOnDesk(e, ci, cli, ri, di);
+
           if(name){
-            deskDiv.innerHTML = `
-              <div class="se-desk-name" draggable="true"
+            desk.innerHTML = `
+              <div style="font-size:9px;font-weight:700;color:${isLeft?'var(--blue2)':'var(--gold2)'};
+                cursor:grab;padding:2px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                draggable="true"
                 ondragstart="seDragStart('${name}',event)"
-                ondragend="seDragEnd(event)">${name}</div>
-              <button class="se-desk-del" onclick="seClearDesk(${ci},${cli},${ri},${di})" title="Remove">✕</button>`;
+                ondragend="seDragEnd(event)"
+                title="${name}">${name}</div>
+              <button style="position:absolute;top:1px;right:1px;background:none;border:none;
+                color:var(--text3);cursor:pointer;font-size:9px;line-height:1;padding:0;"
+                onclick="seClearDesk(${ci},${cli},${ri},${di})" title="Unassign">✕</button>`;
           } else {
-            deskDiv.innerHTML = `<span class="se-desk-empty">empty</span>`;
+            desk.innerHTML = `<span style="font-size:8px;color:${isLeft?'rgba(74,140,245,.3)':'rgba(240,180,41,.3)'};user-select:none;">
+              ${isLeft?'L':'R'}</span>`;
           }
-          pair.appendChild(deskDiv);
+          rowDiv.appendChild(desk);
         });
-        // Add desk button
-        const addBtn = document.createElement('button');
-        addBtn.className = 'se-add-desk';
-        addBtn.textContent = '+ desk row';
-        addBtn.onclick = () => seAddRow(ci, cli);
-        card.appendChild(pair);
+
+        // Row remove button
+        const delBtn = document.createElement('button');
+        delBtn.style.cssText = 'background:none;border:none;color:var(--text3);cursor:pointer;font-size:9px;padding:0 2px;flex-shrink:0;align-self:center;';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Remove row';
+        delBtn.onclick = () => seRemoveRow(ci, cli, ri);
+        rowDiv.appendChild(delBtn);
+        card.appendChild(rowDiv);
       });
-      // Add row button
-      const addRowBtn = document.createElement('button');
-      addRowBtn.className = 'se-add-desk';
-      addRowBtn.style.cssText = 'margin-top:4px;width:100%;display:block;';
-      addRowBtn.textContent = '+ row';
-      addRowBtn.onclick = () => seAddRow(ci, cli);
-      card.appendChild(addRowBtn);
-      grid.appendChild(card);
+
+      colWrap.appendChild(card);
     });
 
-    // Add cluster button per column
-    const addCl = document.createElement('div');
-    addCl.style.cssText = 'grid-column:1;margin-top:6px;';
-    addCl.innerHTML = `<button class="se-add-desk" style="width:100%;" onclick="seAddCluster(${ci})">+ cluster in col ${ci+1}</button>`;
-    grid.appendChild(addCl);
+    // Add cluster button at bottom of column
+    const addClBtn = document.createElement('button');
+    addClBtn.className = 'se-add-desk';
+    addClBtn.textContent = '+ cluster';
+    addClBtn.style.cssText = 'width:100%;';
+    addClBtn.onclick = () => seAddCluster(ci);
+    colWrap.appendChild(addClBtn);
+
+    grid.appendChild(colWrap);
   });
 }
 
+// ── Pill HTML for student chips ──────────────────────────────────
+function sePillHTML(name, homeroom){
+  const hr = homeroom || '';
+  return `<div class="se-name-chip" draggable="true" style="font-size:10px;"
+    ondragstart="seDragStart('${name}',event)"
+    ondragend="seDragEnd(event)"
+    title="${name}${hr?' · '+hr:''}">${name}</div>`;
+}
+
+// ── Drag ──────────────────────────────────────────────────────────
 function seDragStart(name, e){
   SE_DRAG_NAME = name;
-  if(e.target) e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  if(e.target) e.target.style.opacity = '.4';
 }
 function seDragEnd(e){
-  if(e.target) e.target.classList.remove('dragging');
+  if(e.target) e.target.style.opacity = '';
+  SE_DRAG_NAME = null;
 }
 
 function seDropOnDesk(e, ci, cli, ri, di){
-  e.preventDefault();
-  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('.se-desk').forEach(d=>d.style.background='');
   if(!SE_DRAG_NAME) return;
-
-  // Find if name was in another desk and clear it
-  SEATING_LAYOUT.forEach((col, c) => col.clusters.forEach((cl, cl2) => cl.rows.forEach((row, r) => {
-    const idx = row.indexOf(SE_DRAG_NAME);
-    if(idx >= 0) SEATING_LAYOUT[c].clusters[cl2].rows[r][idx] = null;
+  // Swap: if target has a name, move it to old location
+  const targetName = SEATING_LAYOUT[ci].clusters[cli].rows[ri][di];
+  // Clear old location
+  let oldCi=-1,oldCli=-1,oldRi=-1,oldDi=-1;
+  SEATING_LAYOUT.forEach((col,c)=>col.clusters.forEach((cl,cl2)=>cl.rows.forEach((row,r)=>{
+    const idx=row.indexOf(SE_DRAG_NAME);
+    if(idx>=0){oldCi=c;oldCli=cl2;oldRi=r;oldDi=idx;}
   })));
-
-  // Place in target desk
+  if(oldCi>=0) SEATING_LAYOUT[oldCi].clusters[oldCli].rows[oldRi][oldDi] = targetName||null;
   SEATING_LAYOUT[ci].clusters[cli].rows[ri][di] = SE_DRAG_NAME;
   SE_DRAG_NAME = null;
   computeLayoutFlat();
   renderSeatEditor();
 }
 
-function seClearDesk(ci, cli, ri, di){
-  SEATING_LAYOUT[ci].clusters[cli].rows[ri][di] = null;
+function seDropToPool(e){
+  e.preventDefault();
+  if(!SE_DRAG_NAME) return;
+  SEATING_LAYOUT.forEach((col,c)=>col.clusters.forEach((cl,cl2)=>cl.rows.forEach((row,r)=>{
+    const idx=row.indexOf(SE_DRAG_NAME);
+    if(idx>=0) SEATING_LAYOUT[c].clusters[cl2].rows[r][idx]=null;
+  })));
+  SE_DRAG_NAME=null;
+  computeLayoutFlat();
   renderSeatEditor();
 }
 
-function seAddRow(ci, cli){
-  SEATING_LAYOUT[ci].clusters[cli].rows.push([null, null]);
+// ── Structure mutations ───────────────────────────────────────────
+function seClearDesk(ci,cli,ri,di){
+  SEATING_LAYOUT[ci].clusters[cli].rows[ri][di]=null;
   renderSeatEditor();
 }
-
+function seAddRow(ci,cli){
+  SEATING_LAYOUT[ci].clusters[cli].rows.push([null,null]);
+  renderSeatEditor();
+}
+function seRemoveRow(ci,cli,ri){
+  const row=SEATING_LAYOUT[ci].clusters[cli].rows[ri];
+  // Students go to pool (unassign them)
+  SEATING_LAYOUT[ci].clusters[cli].rows.splice(ri,1);
+  if(SEATING_LAYOUT[ci].clusters[cli].rows.length===0)
+    SEATING_LAYOUT[ci].clusters[cli].rows.push([null,null]);
+  computeLayoutFlat(); renderSeatEditor();
+}
 function seAddCluster(ci){
-  SEATING_LAYOUT[ci].clusters.push({num: null, rows:[[null,null]]});
+  SEATING_LAYOUT[ci].clusters.push({num:null,rows:[[null,null]]});
+  renderSeatEditor();
+}
+function seRemoveCluster(ci,cli){
+  if(SEATING_LAYOUT[ci].clusters.length<=1){ toast('Column needs at least 1 cluster'); return; }
+  SEATING_LAYOUT[ci].clusters.splice(cli,1);
+  computeLayoutFlat(); renderSeatEditor();
+}
+function seAddColumn(){
+  SEATING_LAYOUT.push({pt:0,label:'',clusters:[{num:null,rows:[[null,null]]}]});
+  renderSeatEditor();
+}
+function seRemoveColumn(ci){
+  if(SEATING_LAYOUT.length<=1){ toast('Need at least one column'); return; }
+  SEATING_LAYOUT.splice(ci,1);
+  computeLayoutFlat(); renderSeatEditor();
+}
+function addCluster(){ seAddColumn(); } // legacy
+
+// ── Add / Remove student ─────────────────────────────────────────
+function seShowAddStudent(){
+  const f=document.getElementById('seAddStudentForm');
+  if(f){ f.style.display=f.style.display==='none'?'flex':'none'; }
+  // Populate homeroom select
+  const sel=document.getElementById('seNewHomeroom2');
+  if(sel) sel.innerHTML='<option value="">Class</option>'+HOMEROOMS.map(h=>`<option value="${h}">${h}</option>`).join('');
+  document.getElementById('seNewName')?.focus();
+}
+
+function seCommitAddStudent(){
+  const nameEl=document.getElementById('seNewName');
+  const hrEl=document.getElementById('seNewHomeroom2');
+  const clEl=document.getElementById('seNewCluster');
+  const name=(nameEl?.value||'').trim();
+  if(!name){ toast('⚠ Enter a name'); return; }
+  if(ROSTER.find(r=>r.name===name)){ toast('⚠ Already in roster'); return; }
+  const homeroom=hrEl?.value||HOMEROOMS[0]||'';
+  const cluster=parseInt(clEl?.value)||null;
+  ROSTER.push({name,cluster,homeroom});
+  SD[name]={name,cluster,homeroom,coins:0,participation:0,effort:0,discussion:0,mastery:{lap1:null,lap2:null,lap3:null},log:[]};
+  if(nameEl) nameEl.value='';
+  document.getElementById('seAddStudentForm').style.display='none';
+  computeLayoutFlat(); renderSeatEditor(); buildAllDesks(); rerenderDesks();
+  toast(`✓ ${name} added — drag from panel to assign a seat`);
+}
+
+function seCommitRemoveStudent(){
+  const sel=document.getElementById('seRemoveSelect');
+  const name=sel?.value;
+  if(!name) return;
+  // Confirm via toast-style — no browser confirm() since it's blocked in iframes
+  if(SE_PENDING_REMOVE===name){
+    // Second click = confirmed
+    SE_PENDING_REMOVE=null;
+    const idx=ROSTER.findIndex(r=>r.name===name);
+    if(idx>=0) ROSTER.splice(idx,1);
+    delete SD[name];
+    SEATING_LAYOUT.forEach((col,c)=>col.clusters.forEach((cl,cl2)=>cl.rows.forEach((row,r)=>{
+      const i=row.indexOf(name); if(i>=0) SEATING_LAYOUT[c].clusters[cl2].rows[r][i]=null;
+    })));
+    saveLocal(); computeLayoutFlat(); renderSeatEditor(); buildAllDesks(); rerenderDesks();
+    toast(`${name} removed from roster`);
+    if(sel) sel.value='';
+  } else {
+    SE_PENDING_REMOVE=name;
+    toast(`⚠ Click Remove again to confirm removing ${name}`);
+    setTimeout(()=>{ if(SE_PENDING_REMOVE===name){ SE_PENDING_REMOVE=null; toast('Cancelled'); } },4000);
+  }
+}
+let SE_PENDING_REMOVE=null;
+
+// ── Homerooms ─────────────────────────────────────────────────────
+function seRefreshHomeroomDropdown(){
+  const sel=document.getElementById('seHomeroomFilter');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">All Students</option>'+
+    HOMEROOMS.map(h=>`<option value="${h}"${h===cur?' selected':''}>${h}</option>`).join('');
+}
+
+function seFilterHomeroom(val){
+  ACTIVE_HOMEROOM=val;
   renderSeatEditor();
 }
 
-function addCluster(){
-  // Add to first column by default
-  SEATING_LAYOUT[0].clusters.push({num: null, rows:[[null,null]]});
+function seManageHomerooms(){
+  const mgr=document.getElementById('seHomeroomManager');
+  if(!mgr) return;
+  mgr.style.display=mgr.style.display==='none'?'block':'none';
+  seRenderHomeroomList();
+}
+
+function seRenderHomeroomList(){
+  const el=document.getElementById('seHomeroomList');
+  if(!el) return;
+
+  // Class list at top
+  const classHTML = HOMEROOMS.map((h,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border-radius:5px;padding:5px 8px;margin-bottom:4px;">
+      <span style="flex:1;font-size:11px;font-weight:600;color:var(--text);">${h}</span>
+      <span style="font-size:9px;color:var(--text3);">${ROSTER.filter(r=>r.homeroom===h).length} students</span>
+      <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;"
+        onclick="seDeleteHomeroom(${i})" title="Remove class">✕</button>
+    </div>`).join('');
+
+  // Per-student assignment table
+  const studentRows = [...ROSTER].sort((a,b)=>a.name.localeCompare(b.name)).map(r => `
+    <div style="display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:4px;background:var(--bg3);margin-bottom:3px;">
+      <span style="flex:1;font-size:10px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.name}">${r.name}</span>
+      <select onchange="seAssignHomeroom('${r.name}',this.value)"
+        style="font-size:9px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:2px 4px;max-width:110px;">
+        <option value="">— unassigned —</option>
+        ${HOMEROOMS.map(h=>`<option value="${h}" ${r.homeroom===h?'selected':''}>${h}</option>`).join('')}
+      </select>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px;">Classes</div>
+    ${classHTML || '<div style="font-size:10px;color:var(--text3);font-style:italic;padding:4px;">No classes yet</div>'}
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:10px 0 6px;">Assign Students to Classes</div>
+    ${studentRows}`;
+}
+
+function seAssignHomeroom(name, homeroom){
+  const student = ROSTER.find(r=>r.name===name);
+  if(student){
+    student.homeroom = homeroom || '';
+    if(SD[name]) SD[name].homeroom = homeroom || '';
+    seRefreshHomeroomDropdown();
+    renderSeatEditor();
+    // No toast — silent update since it's inline
+  }
+}
+
+function seAddHomeroom(){
+  const inp=document.getElementById('seNewHomeroom');
+  const name=(inp?.value||'').trim();
+  if(!name){ toast('Enter a class name'); return; }
+  if(HOMEROOMS.includes(name)){ toast('Already exists'); return; }
+  HOMEROOMS.push(name);
+  if(inp) inp.value='';
+  seRenderHomeroomList();
+  seRefreshHomeroomDropdown();
+  toast(`✓ Class "${name}" added`);
+}
+
+function seDeleteHomeroom(i){
+  const name=HOMEROOMS[i];
+  const count=ROSTER.filter(r=>r.homeroom===name).length;
+  if(count>0){ toast(`⚠ Move ${count} students out of "${name}" first`); return; }
+  HOMEROOMS.splice(i,1);
+  if(ACTIVE_HOMEROOM===name) ACTIVE_HOMEROOM='all';
+  seRenderHomeroomList();
+  seRefreshHomeroomDropdown();
+  toast(`"${name}" removed`);
+}
+
+// ── Formation wizard ──────────────────────────────────────────────
+function seShowFormationWizard(){
+  const w=document.getElementById('seFormationWizard');
+  if(!w) return;
+  w.style.display=w.style.display==='none'?'block':'none';
+  setFormationType('groups');
+  seUpdateFormationPreview();
+  // Wire inputs
+  ['fmtCols','fmtGroupsPerCol','fmtDesksPerRow','fmtRowsPerGroup',
+   'fmtRowCols','fmtRowCount','fmtSeatsPerRow'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.oninput=seUpdateFormationPreview;
+  });
+}
+
+function setFormationType(type){
+  SE_FORMATION_TYPE=type;
+  document.getElementById('fmtGroupsConfig').style.display = type==='groups'?'block':'none';
+  document.getElementById('fmtRowsConfig').style.display   = type==='rows'  ?'block':'none';
+  document.getElementById('fmtGroupLabel').style.borderColor = type==='groups'?'var(--green)':'var(--border2)';
+  document.getElementById('fmtGroupLabel').style.color       = type==='groups'?'var(--green2)':'var(--text2)';
+  document.getElementById('fmtRowsLabel').style.borderColor  = type==='rows'  ?'var(--green)':'var(--border2)';
+  document.getElementById('fmtRowsLabel').style.color        = type==='rows'  ?'var(--green2)':'var(--text2)';
+  seUpdateFormationPreview();
+}
+
+function seUpdateFormationPreview(){
+  const lbl=document.getElementById('fmtPreviewLabel');
+  if(!lbl) return;
+  if(SE_FORMATION_TYPE==='groups'){
+    const cols=parseInt(document.getElementById('fmtCols')?.value)||3;
+    const gpc =parseInt(document.getElementById('fmtGroupsPerCol')?.value)||3;
+    const dpr =parseInt(document.getElementById('fmtDesksPerRow')?.value)||2;
+    const rpg =parseInt(document.getElementById('fmtRowsPerGroup')?.value)||2;
+    lbl.textContent=`Preview: ${cols} col × ${gpc} groups × ${rpg} rows × ${dpr} desks = ${cols*gpc*rpg*dpr} desk slots`;
+  } else {
+    const cols=parseInt(document.getElementById('fmtRowCols')?.value)||3;
+    const rows=parseInt(document.getElementById('fmtRowCount')?.value)||6;
+    const spr =parseInt(document.getElementById('fmtSeatsPerRow')?.value)||2;
+    lbl.textContent=`Preview: ${cols} col × ${rows} rows × ${spr} seats = ${cols*rows*spr} desk slots`;
+  }
+}
+
+function seApplyFormation(){
+  // Move all students to pool first
+  const newLayout=[];
+  if(SE_FORMATION_TYPE==='groups'){
+    const cols=Math.max(1,Math.min(8, parseInt(document.getElementById('fmtCols')?.value)||3));
+    const gpc =Math.max(1,Math.min(10,parseInt(document.getElementById('fmtGroupsPerCol')?.value)||3));
+    const dpr =Math.max(1,Math.min(4, parseInt(document.getElementById('fmtDesksPerRow')?.value)||2));
+    const rpg =Math.max(1,Math.min(8, parseInt(document.getElementById('fmtRowsPerGroup')?.value)||2));
+    for(let c=0;c<cols;c++){
+      const clusters=[];
+      for(let g=0;g<gpc;g++){
+        const rows=[];
+        for(let r=0;r<rpg;r++){
+          const row=[];
+          for(let d=0;d<dpr;d++) row.push(null);
+          rows.push(row);
+        }
+        clusters.push({num:null,rows});
+      }
+      newLayout.push({pt:0,label:'',clusters});
+    }
+  } else {
+    const cols=Math.max(1,Math.min(8, parseInt(document.getElementById('fmtRowCols')?.value)||3));
+    const rows=Math.max(1,Math.min(12,parseInt(document.getElementById('fmtRowCount')?.value)||6));
+    const spr =Math.max(1,Math.min(4, parseInt(document.getElementById('fmtSeatsPerRow')?.value)||2));
+    for(let c=0;c<cols;c++){
+      const rowArr=[];
+      for(let r=0;r<rows;r++){
+        const row=[];
+        for(let d=0;d<spr;d++) row.push(null);
+        rowArr.push(row);
+      }
+      // All rows as a single "cluster" per column for row layout
+      newLayout.push({pt:0,label:'',clusters:[{num:null,rows:rowArr}]});
+    }
+  }
+  SEATING_LAYOUT=newLayout;
+  computeLayoutFlat();
+  document.getElementById('seFormationWizard').style.display='none';
   renderSeatEditor();
+  toast('✓ New formation created — drag students from the right panel into seats');
 }
 
 function saveSeats(){
