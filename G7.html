@@ -1980,6 +1980,9 @@ function resetStudentAll(){
   rerenderDesk(name);
   updateStats();
   refreshPanel();
+  if(SCRIPT_URL) fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'reset_student',name})}).catch(()=>{});
   pushToSheet(name);
   toast(`${name} · All stats reset`);
 }
@@ -3500,6 +3503,9 @@ function seCommitAddStudent(){
   SD[name]={name,cluster,homeroom,coins:0,participation:0,effort:0,discussion:0,mastery:{lap1:null,lap2:null,lap3:null},log:[]};
   if(nameEl) nameEl.value='';
   document.getElementById('seAddStudentForm').style.display='none';
+  // Push to Sheets
+  if(SCRIPT_URL) fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'add_student',name,cluster,homeroom})}).catch(()=>{});
   computeLayoutFlat(); renderSeatEditor(); buildAllDesks(); rerenderDesks();
   toast(`✓ ${name} added — drag from panel to assign a seat`);
 }
@@ -3518,6 +3524,9 @@ function seCommitRemoveStudent(){
     SEATING_LAYOUT.forEach((col,c)=>col.clusters.forEach((cl,cl2)=>cl.rows.forEach((row,r)=>{
       const i=row.indexOf(name); if(i>=0) SEATING_LAYOUT[c].clusters[cl2].rows[r][i]=null;
     })));
+    // Push removal to Sheets
+    if(SCRIPT_URL) fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'remove_student',name})}).catch(()=>{});
     saveLocal(); computeLayoutFlat(); renderSeatEditor(); buildAllDesks(); rerenderDesks();
     toast(`${name} removed from roster`);
     if(sel) sel.value='';
